@@ -9,7 +9,7 @@ const Header = () => {
         <Link href="/" className="flex items-center">
           <img src="/images/lugu.png" className="h-6 w-auto"/>
         </Link>
-        <div className="text-sm text-gray-600 font-semibold" onClick={openSidebar}>
+        <div className="text-sm text-gray-600 font-semibold cursor-pointer select-none" onClick={openSidebar}>
           Get your custom quote today!
         </div>
       </div>

@@ -48,18 +48,18 @@ export default function Pagination({
   };
 
   return (
-    <nav className="flex items-center justify-between mt-6">
+    <nav className="flex items-center justify-between mt-0">
       {/* Left Arrow */}
       <div className="flex">
         <Link
           href={links[0].url || "#"}
-          className={`px-3 py-2 rounded-md border flex items-center ${
+          className={`px-3 py-2 rounded-md border text-sm gap-2 flex items-center ${
             links[0].url
               ? "text-gray-700 hover:bg-gray-100"
               : "text-gray-400 cursor-not-allowed"
           }`}
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft size={18} /> Previous
         </Link>
       </div>
 
@@ -90,13 +90,13 @@ export default function Pagination({
       <div className="flex">
         <Link
           href={links[links.length - 1].url || "#"}
-          className={`px-3 py-2 rounded-md border flex items-center ${
+          className={`px-3 py-2 rounded-md border flex text-sm gap-2 items-center ${
             links[links.length - 1].url
               ? "text-gray-700 hover:bg-gray-100"
               : "text-gray-400 cursor-not-allowed"
           }`}
         >
-          <ArrowRight size={18} />
+          Next <ArrowRight size={18} />
         </Link>
       </div>
     </nav>

@@ -111,7 +111,7 @@ const Sidebar = () => {
                   closeSidebar();
                   logoutUser();
                 }}
-                className="w-full flex items-center justify-center gap-3 px-4 py-3 bg-onpoint-btnblue text-white hover:bg-red-700 rounded-xl transition font-semibold"
+                className="w-full flex cursor-pointer select-none items-center justify-center gap-3 px-4 py-3 bg-onpoint-btnblue text-white hover:bg-black rounded-xl transition font-semibold"
               >
                 <LogOut size={18} />
                 Logout

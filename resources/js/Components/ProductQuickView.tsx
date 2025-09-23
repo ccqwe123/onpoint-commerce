@@ -117,7 +117,10 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
                       <span className="text-lg text-gray-500 line-through">₱{product.price}</span>
                     </div>
                   </div>
-                  <p className="text-gray-600">{product.description}</p>
+                  <p
+                    className="text-gray-600"
+                    dangerouslySetInnerHTML={{ __html: product.description ?? "" }}
+                  ></p>
                 </div>
 
                 {/* Add to cart button with animation */}

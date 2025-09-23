@@ -1,3 +1,5 @@
+import { FileUpload, UploadedFile } from '@/Components/ui/file-upload';
+
 export interface ProductImage {
   id: number;
   product_id: number;
@@ -35,3 +37,15 @@ export interface ProductView {
   stock: number;
   images: string[]; 
 }
+
+export interface ExistingUploadedFile {
+  id: string;
+  file: File | null;
+  previewUrl: string;
+  isExisting: true;
+  existingImageId: number;
+  progress: number;
+  status: "uploading" | "completed" | "error";
+}
+
+export type FormUploadedFile = UploadedFile | ExistingUploadedFile;
