@@ -1,12 +1,31 @@
 // components/Sidebar.tsx
 import { motion, AnimatePresence } from "framer-motion";
+import { useEffect, useState } from 'react';
 import { useSidebar } from "@/context/SidebarContext";
 import { Home, ShoppingCart, Settings, LogOut } from "lucide-react";
-import { Link } from "@inertiajs/react";
+import { usePage, Link } from '@inertiajs/react';
 import axios from "axios";
+
+interface SidebarProps { currentUrl: string }
 
 const Sidebar = () => {
   const { isOpen, closeSidebar } = useSidebar();
+  const [currentUrl, setCurrentUrl] = useState(window.location.pathname);
+
+  useEffect(() => {
+    const onNavigate = (event: any) => {
+      setCurrentUrl(event.detail.page.url); // updates URL reactively
+    };
+
+    document.addEventListener('inertia:navigate', onNavigate);
+
+    return () => document.removeEventListener('inertia:navigate', onNavigate);
+  }, []);
+
+  const isActive = (path: string) => currentUrl.includes(path);
+  console.log(isActive);
+  console.log(currentUrl);
+  console.log(isActive("/plans"));
   const logoutUser = async () => {
      try {
           await axios.get("/logout"),
@@ -55,27 +74,33 @@ const Sidebar = () => {
             {/* Menu */}
             <nav className="flex-1 px-6 py-8 space-y-6">
               <Link
-                href="/dashboard"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition"
+                href="/plans"
+                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                  isActive("/plans") ? "bg-onpoint-btnblue text-white" : ""
+                }`}
               >
                 <Home size={20} />
-                <span className="font-medium">Dashboard</span>
+                <span className="font-medium">Plans</span>
               </Link>
 
               <Link
-                href="/orders"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition"
+                href="/product-categories"
+                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                  isActive("/product-categories") ? "bg-onpoint-btnblue text-white" : ""
+                }`}
               >
                 <ShoppingCart size={20} />
-                <span className="font-medium">Orders</span>
+                <span className="font-medium">Product Categories</span>
               </Link>
 
               <Link
-                href="/settings"
-                className="flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition"
+                href="/quotation"
+                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                  isActive("/quotation") ? "bg-onpoint-btnblue text-white" : ""
+                }`}
               >
                 <Settings size={20} />
-                <span className="font-medium">Settings</span>
+                <span className="font-medium">Quotation</span>
               </Link>
             </nav>
 

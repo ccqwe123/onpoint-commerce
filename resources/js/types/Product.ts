@@ -6,10 +6,10 @@ export interface ProductImage {
   created_at: string;
   updated_at: string;
 }
-interface Category {
+export interface Category {
   id: number;
   name: string;
-  is_active: number;
+  is_active: boolean;
 }
 export interface Product {
   id: number;

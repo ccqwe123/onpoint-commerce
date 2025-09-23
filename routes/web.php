@@ -2,6 +2,8 @@
 
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ProductController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -56,6 +58,20 @@ Route::middleware('auth')->group(function () {
     Route::get('/thank-you', function () {
         return Inertia::render('ThankYou');
     });
+    Route::get('/plans',[ PlanController::class, 'planList'])->name('plans.index');
+    Route::get('/plan/{id}',[ PlanController::class, 'edit']);
+    Route::put('/plan/{id}', [PlanController::class, 'update'])->name('plan.update');
+    Route::put('/plan/{id}/toggle', [PlanController::class, 'toggle'])->name('plan.toggle');
+
+    
+    Route::get('/product-categories', [ProductController::class, 'categoryList'])->name('product-categories.index');
+    Route::get('/product-categories/create', [ProductController::class, 'categoryCreate'])->name('product-categories.create');
+    Route::post('/product-categories', [ProductController::class, 'store'])->name('product-categories.store');
+    Route::put('/product-categories/{id}', [ProductController::class, 'update'])->name('product-categories.update');
+    Route::put('/product-categories/{id}/toggle', [ProductController::class, 'toggle'])->name('product-categories.toggle');
+
+    Route::get('/category/{id}/product-list', [ProductController::class, 'productList'])->name('product-categories.product.index');
+    Route::get('/product/{id}/create', [ProductController::class, 'productCreate'])->name('product.create');
 });
 
 require __DIR__.'/auth.php';

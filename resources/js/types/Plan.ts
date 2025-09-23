@@ -1,6 +1,6 @@
 export interface PlanDescription {
-  id: number;
-  name: string;
+  id: number | null;
+  name: string;  
 }
 
 export interface Plan {

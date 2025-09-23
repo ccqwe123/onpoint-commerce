@@ -7,6 +7,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import Sidebar from "@/Components/Sidebar";
 import { SidebarProvider } from "@/context/SidebarContext";
 import SwipeDetector from "@/Components/SwipeDetector";
+import { ToastProvider } from "@/Components/ToastProvider";
 // const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
 // createInertiaApp({
@@ -55,6 +56,7 @@ createInertiaApp({
             <App {...props} />
             <Sidebar />
             <SwipeDetector />
+            <ToastProvider />
           </SidebarProvider>
         </motion.div>
       </AnimatePresence>

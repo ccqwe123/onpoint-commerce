@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Inertia\Inertia;
 use App\Models\Order;
 use App\Models\Plan;
 
@@ -48,5 +49,75 @@ class PlanController extends Controller
         }
 
         return response()->json(['success' => true, 'order_id' => $order->id]);
+    }
+
+    public function planList() 
+    {
+        $plans = Plan::with('descriptions')->paginate(10);
+
+        return Inertia::render('Plan/Index', [
+            'plans' => $plans
+        ]);
+    }
+
+    public function edit($id)
+    {
+        $plan = Plan::with('descriptions')->findOrFail($id);
+
+        return Inertia::render('Plan/Edit', [
+            'plan' => $plan,
+        ]);
+    }
+
+    public function update(Request $request, $id)
+    {
+        $plan = Plan::findOrFail($id);
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'is_active' => 'boolean',
+            'price' => 'nullable|numeric',
+            'descriptions' => 'array',
+            'descriptions.*.id' => 'nullable|integer|exists:plan_descriptions,id',
+        ]);
+        
+        $plan->update([
+            'name' => $validated['name'],
+            'is_active' => $validated['is_active'],
+            'price' => $validated['price'],
+        ]);
+        
+        $descriptions = collect($request->input('descriptions', []))
+            ->filter(fn ($desc) => !empty($desc['name']))
+            ->values();
+
+        $incomingIds = $descriptions->pluck('id')->filter();
+
+        $plan->descriptions()
+            ->whereNotIn('id', $incomingIds)
+            ->delete();
+
+        foreach ($descriptions as $desc) {
+            if (!empty($desc['id'])) {
+                $plan->descriptions()->where('id', $desc['id'])->update([
+                    'name' => $desc['name'],
+                ]);
+            } else {
+                $plan->descriptions()->create([
+                    'name' => $desc['name'],
+                ]);
+            }
+        }
+
+        return redirect()->route('plans.index')->with('success', 'Plan updated!');
+    }
+
+    public function toggle($id)
+    {
+        $plan = Plan::findOrFail($id);
+        $plan->is_active = !$plan->is_active;
+        $plan->save();
+
+        return redirect()->route('plans.index')->with('success', 'Plan status updated!');
     }
 }
