@@ -1,14 +1,51 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Header from "@/Components/Header";
-import { Check } from 'lucide-react';
+import { Check, X } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import axios from "axios";
 import { Product } from "@/types/Product";
+import { Client } from "@/types/Plan";
 import { Plan } from "@/types/Plan";
 import { motion, AnimatePresence } from "framer-motion";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 interface ReviewOrderProps {
   onContinue: () => void;
+}
+
+function getPaymentMonths(payment: string | null): number {
+  switch (payment) {
+    case "one-time":
+      return 1;
+    case "6-months":
+      return 6;
+    case "12-months":
+      return 12;
+    case "24-months":
+      return 24;
+    default:
+      return 1;
+  }
+}
+
+export function formatCurrency(value: string | number): string {
+  const num = typeof value === "string" ? parseFloat(value) : value;
+  if (isNaN(num)) return "0.00";
+  return num.toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
+function getMonthlyPayment(payment: string, plan:any , subt:any): string {
+  const months = getPaymentMonths(payment);
+  const planPrice = parseFloat(plan ?? "0");
+  const subtotal = parseFloat(subt ?? "0");
+
+  const total = planPrice + subtotal;
+  const monthly = total / months;
+
+  return formatCurrency(monthly);
 }
 
 const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
@@ -18,13 +55,53 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [payment, setPayment] = useState('');
+    const [clientName, setClientName] = useState("");
+    const [clientId, setClientId] = useState<number | null>(null);
+    const [suggestions, setSuggestions] = useState<Client[]>([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
+    const wrapperRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const handler = setTimeout(async () => {
+        if (clientName.length > 1 && clientId === null) {
+            const res = await axios.get(`/api/clients/search?name=${clientName}`);
+            setSuggestions(res.data);
+        } else {
+            setSuggestions([]);
+        }
+        }, 400);
+
+        return () => {
+        clearTimeout(handler);
+        };
+    }, [clientName, clientId]);
+
+    const handleSelectClient = (client: Client) => {
+        setClientName(client.name);
+        setClientId(client.id);
+        setSuggestions([]);
+    };
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+        if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+            setSuggestions([]);
+        }
+        }
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     const handleSubmit = async () => {
-        if (!plans) return;
+        if (!plans || !clientName.trim()) return;
         setLoading(true);
         try {
             await axios.post("/api/orders", {
             plan_id: plans.id,
+            client_id: clientId,
+            client_name: clientId ? null : clientName,
             cart: cartItems.map(item => ({
                 product_id: item.id,
                 quantity: item.quantity,
@@ -109,14 +186,12 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
     };
 
     return (
-        <motion.div 
+        <AuthenticatedLayout>
+        <motion.div className="flex-1 px-16"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.98 }}
-            transition={{ duration: 0.35, ease: "easeInOut" }}
-            className="relative min-h-screen flex flex-col bg-gray-50">
-        <Header/>
-        <main className="flex-1 px-16">
+            transition={{ duration: 0.35, ease: "easeInOut" }}>
         <div className="max-w-[1480px] mx-auto px-4 py-8">
             {/* Header */}
             <div className="mb-8">
@@ -170,12 +245,17 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
             </div>
 
         </div>
-        </main>
+        </motion.div>
         <footer className="w-full bg-white shadow-[0_-1px_1px_rgba(0,0,0,0.1)] py-6 fixed bottom-0">
             <div className="max-w-[1480px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
                 <div>
-                    <span className="text-black font-semibold text-3xl">6 Months : </span>
-                    <span className="text-onpoint-btnblue font-semibold text-3xl">P7,400.00</span>
+                    <span className="text-black font-semibold text-3xl">
+                        {payment && 
+                            payment == 'one-time' ? 'One Time' : 
+                            payment == '6-months' ? '6 Months' :
+                            payment == '12-months' ? '12 Months' : 
+                            payment == '24-months' ? '24 Months' : 'No Payment Selected'} : </span>
+                    <span className="text-onpoint-btnblue font-semibold text-3xl">{ getMonthlyPayment(payment, plans?.price, subtotal, ) }</span>
                 </div>
                 <div className="flex flex-row gap-4">
                     <Link 
@@ -199,7 +279,7 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
         </footer>
         <AnimatePresence>
             {showModal && (
-                <motion.div
+            <motion.div
                 key="modal-backdrop"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
@@ -213,31 +293,58 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 20 }}
                     transition={{ duration: 0.25 }}
-                    className="bg-white rounded-2xl p-8 w-[400px] shadow-lg"
+                    className="bg-white rounded-2xl p-8 w-[400px] shadow-lg relative"
                 >
+                    <X className="absolute top-5 right-5 w-5 h-5 cursor-pointer" onClick={() => setShowModal(false)} />
                     <h2 className="text-xl font-bold mb-4">Confirm Order</h2>
+                    <div className="relative" ref={wrapperRef}>
+                        <input
+                            type="text"
+                            className="w-full rounded-lg border px-3 py-2"
+                            placeholder="Client Name"
+                            value={clientName}
+                            onChange={(e) => {
+                                setClientName(e.target.value);
+                                setClientId(null);
+                            }}
+                            onFocus={() => clientName.length > 1 && setShowSuggestions(true)}
+                        />
+
+                        {suggestions.length > 0 && clientId === null && (
+                            <ul className="absolute bg-white border rounded-md mt-1 w-full shadow-md z-50">
+                                {suggestions.map((client) => (
+                                    <li
+                                    key={client.id}
+                                    onClick={() => handleSelectClient(client)}
+                                    className="px-3 py-2 cursor-pointer hover:bg-gray-100"
+                                    >
+                                    {client.name}
+                                    </li>
+                                ))}
+                            </ul>
+                        )}
+                    </div>
                     <p className="text-gray-600 mb-6">Are you sure you want to submit your order?</p>
                     <div className="flex justify-end gap-4">
-                    <button
-                        onClick={() => setShowModal(false)}
-                        className="px-6 py-3 rounded-lg border border-gray-400 text-gray-600 hover:bg-gray-100"
-                    >
-                        Cancel
-                    </button>
-                    <button
-                        onClick={handleSubmit}
-                        disabled={loading}
-                        className="px-6 py-3 rounded-lg bg-onpoint-btnblue text-white hover:bg-onpoint-dark-blue disabled:opacity-50"
-                    >
-                        {loading ? "Submitting..." : "Submit"}
-                    </button>
+                        <button
+                            onClick={() => setShowModal(false)}
+                            className="px-6 py-3 rounded-lg border border-gray-400 text-gray-600 hover:bg-gray-100"
+                        >
+                            Cancel
+                        </button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading || !clientName.trim()}
+                            className="px-6 py-3 rounded-lg bg-onpoint-btnblue text-white hover:bg-onpoint-dark-blue disabled:opacity-50"
+                        >
+                            {loading ? "Submitting..." : "Confirm"}
+                        </button>
                     </div>
                 </motion.div>
-                </motion.div>
+            </motion.div>
             )}
             </AnimatePresence>
-
-    </motion.div>
+    </AuthenticatedLayout>
   );
 };
 

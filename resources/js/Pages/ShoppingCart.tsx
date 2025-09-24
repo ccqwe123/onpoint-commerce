@@ -5,6 +5,7 @@ import { Link } from "@inertiajs/react";
 import axios from "axios";
 import { Product } from "@/types/Product";
 import { motion } from "framer-motion";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 function ShoppingCart() {
   const [cart, setCart] = useState<Record<number, number>>({});
@@ -64,15 +65,13 @@ function ShoppingCart() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="min-h-screen bg-white">
-      <Header />
-
-      <div className="max-w-[1480px] mx-auto bg-white min-h-[90vh]">
+    <AuthenticatedLayout>
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.35, ease: "easeInOut" }} 
+        className="max-w-[1480px] mx-auto bg-white min-h-[90vh]">
         {/* Header */}
         <div className="flex items-center justify-between p-4 bg-white">
           <Link href="/devices" className="flex items-center text-gray-700 hover:text-gray-900">
@@ -155,8 +154,8 @@ function ShoppingCart() {
             </span>
           )}
         </div>
-      </div>
-    </motion.div>
+      </motion.div>
+    </AuthenticatedLayout>
   );
 }
 

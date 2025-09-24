@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
-import Header from "@/Components/Header";
 import { Check } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import axios from "axios";
 import { Product } from "@/types/Product";
 import { motion } from "framer-motion";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 interface PaymentTermsProps {
   onContinue: () => void;
@@ -13,8 +13,8 @@ interface PaymentTermsProps {
 const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [payment, setPayment] = useState(0);
-  const [cartItems, setCartItems] = useState<(Product & { quantity: number })[]>([]);
   const [selectedPayment, setSelectedPayment] = useState<'one-time' | '6-months' | '12-months' | '24-months'>('one-time');
+  const [cartItems, setCartItems] = useState<(Product & { quantity: number })[]>([]);
 
   useEffect(() => {
     const saved = localStorage.getItem("cart");
@@ -23,16 +23,28 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
   }, []);
 
   useEffect(() => {
-    const payment = localStorage.getItem("payment");
-    if (
-      payment === "one-time" ||
-      payment === "6-months" ||
-      payment === "12-months" ||
-      payment === "24-months"
-    ) {
-      setSelectedPayment(payment);
+    const saved = localStorage.getItem("payment") as
+      | 'one-time'
+      | '6-months'
+      | '12-months'
+      | '24-months'
+      | null;
+
+    // Map plan string -> number of months
+    const planMap: Record<typeof selectedPayment, number> = {
+      'one-time': 1,
+      '6-months': 6,
+      '12-months': 12,
+      '24-months': 24,
+    };
+
+    if (saved && planMap[saved]) {
+      setSelectedPayment(saved);
+      setPayment(planMap[saved]);
     } else {
       localStorage.setItem("payment", "one-time");
+      setSelectedPayment("one-time");
+      setPayment(1);
     }
   }, []);
 
@@ -69,56 +81,57 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
   };
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="relative min-h-screen bg-white">
-      <Header/>
-      <div className="max-w-[1480px] mx-auto px-4 py-8">
-        {/* Header */}
+    <AuthenticatedLayout>
+      <motion.div  className="max-w-[1480px] mx-auto px-4 py-8"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.35, ease: "easeInOut" }}
+        >
         <div className="mb-4">
           <p className="text-sm text-gray-600 mb-2">STEP 3 OF 3</p>
           <h1 className="text-3xl font-bold text-gray-900 mb-6">Choose your payment terms.</h1>
         </div>
 
         {/* Add-ons Table */}
-        <div className="mb-8">
+        <div className="mb-8 relative">
           <div className="bg-gray-900 text-white px-4 py-3 font-semibold">
             ADD ONS
           </div>
           
+          <div className="bg-onpoint-btnblue absolute top-15 right-0 
+              rounded-br-xl rounded-bl-xl w-[60%] h-10 
+              text-center text-white flex items-center justify-center">
+            0% Interest
+          </div>
           <div className="">
             {/* Table Header */}
-            <div className="grid grid-cols-7 gap-4 p-4 text-sm font-medium text-gray-700">
-              <div className="text-base font-semibold">Device</div>
-              <div className="text-base font-semibold">Price</div>
-              <div className="text-base font-semibold">Downpayment</div>
-              <div className="text-center text-base font-semibold">One Time</div>
-              <div className="text-center text-base font-semibold">6 mos.</div>
-              <div className="text-center text-base font-semibold">12 mos.</div>
-              <div className="text-center text-base font-semibold">24 mos.</div>
-            </div>
-            
+
+              {/* Table Header */}
+              <div className="grid grid-cols-5 gap-4 p-4 text-sm font-medium text-gray-700 mt-10">
+                <div className="text-base font-semibold">Device</div>
+                <div className="text-base font-semibold">Price</div>
+                <div className="text-center text-base font-semibold">One Time</div>
+                <div className="text-center text-base font-semibold">6 mos.</div>
+                <div className="text-center text-base font-semibold">12 mos.</div>
+              </div>
             {/* Table Row */}
-            <div className="grid grid-cols-7 gap-4 p-4 text-sm">
+            <div className="grid grid-cols-5 gap-4 p-4 text-sm">
               <div className="text-gray-600">
                 {cartItems.map((item) => (
                   <div key={item.id} className="text-sm font-medium">x{item.quantity} {item.name}</div>
                 ))}
               </div>
               <div className="font-semibold">{formatPrice(subtotal)}</div>
-              <div>{formatPrice(downpayment)}</div>
+              {/* <div>{formatPrice(downpayment)}</div> */}
               <div className="text-center">{formatPrice(subtotal)}</div>
               <div className="text-center">{formatPrice(subtotal/6)}</div>
               <div className="text-center">{formatPrice(subtotal/12)}</div>
-              <div className="text-center">{formatPrice(subtotal/24)}</div>
+              {/* <div className="text-center">{formatPrice(subtotal/24)}</div> */}
             </div>
             
             {/* Radio Button Row */}
-            <div className="grid grid-cols-7 gap-4 p-4 pb-16 items-center border-b border-[#060B16]/50">
-              <div></div>
+            <div className="grid grid-cols-5 gap-4 p-4 pb-16 items-center border-b border-[#060B16]/50">
               <div></div>
               <div></div>
               <div className="flex justify-center">
@@ -169,7 +182,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
                   {selectedPayment === '12-months' && (<Check className="text-white w-4 h-4"/> )}
                 </button>
               </div>
-              <div className="flex justify-center">
+              {/* <div className="flex justify-center">
                 <button
                   onClick={() => {
                     setSelectedPayment('24-months'),
@@ -184,7 +197,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
                 >
                   {selectedPayment === '24-months' && (<Check className="text-white w-4 h-4"/> )}
                 </button>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>
@@ -198,7 +211,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
             </p>
           </div>
         </div>
-      </div>
+      </motion.div >
       <footer className="w-full fixed bottom-0 bg-white shadow-[0_-1px_1px_rgba(0,0,0,0.1)] py-6">
         <div className="max-w-[1480px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
             <Link 
@@ -218,7 +231,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
             </Link>
         </div>
     </footer>
-    </motion.div>
+    </AuthenticatedLayout>
   );
 };
 

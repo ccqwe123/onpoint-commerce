@@ -75,7 +75,6 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
     });
   };
 
-  // Subtotal (using discount_price if available)
   const subtotal = cartItems.reduce((sum, p) => {
     const unit = parseFloat(p.discount_price || p.price) || 0;
     return sum + unit * (p.quantity || 0);
@@ -179,8 +178,9 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
                   </p>
                   <div className="mt-6">
                     <button
+                      disabled={cartItems.length === 0}
                       onClick={() => (window.location.href = "/shopping-cart")}
-                      className="w-full rounded-md bg-indigo-600 px-6 py-3 text-base font-medium text-white hover:bg-indigo-700"
+                      className={`w-full rounded-md bg-onpoint-btnblue px-6 py-3 text-base font-medium text-white hover:bg-blue-600 ${cartItems.length === 0 ? 'disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400' : ''}`}
                     >
                       Checkout
                     </button>

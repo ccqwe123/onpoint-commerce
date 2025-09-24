@@ -4,6 +4,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PlanController;
+use App\Http\Controllers\ClientController;
 
 /*
 |--------------------------------------------------------------------------
@@ -27,4 +28,5 @@ Route::get('/plans', [PlanController::class, 'index']);
 
 Route::get('/plan/{id}', [PlanController::class, 'getPlan']);
 Route::post('/orders', [PlanController::class, 'order']);
+Route::get('/clients/search', [ClientController::class, 'search']);
 

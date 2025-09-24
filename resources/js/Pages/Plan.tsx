@@ -5,6 +5,7 @@ import Header from "@/Components/Header";
 import { Link } from "@inertiajs/react";
 import { PlanData } from "@/types/Plan";
 import { motion } from "framer-motion";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 const Plans = () => {
   const [plans, setPlans] = useState<PlanData[]>([]);
@@ -24,15 +25,12 @@ const Plans = () => {
   }, []);
 
   return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.98 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.98 }}
-      transition={{ duration: 0.35, ease: "easeInOut" }}
-      className="min-h-screen flex flex-col bg-gray-50">
-      <Header />
-      
-      <main className="flex-1 p-16">
+    <AuthenticatedLayout>
+      <motion.div className="flex-1 p-16"
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.98 }}
+        transition={{ duration: 0.35, ease: "easeInOut" }}>
         <div className="max-w-[1480px] mx-auto">
           {/* Step indicator */}
           <p className="text-sm text-gray-500 font-medium tracking-wider uppercase">
@@ -111,7 +109,7 @@ const Plans = () => {
             
           </div>
         </div>
-      </main>
+      </motion.div>
       <footer className="w-full fixed bottom-0 bg-white shadow-[0_-1px_1px_rgba(0,0,0,0.1)] py-6">
         <div className="max-w-[1480px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">
             <Link 
@@ -139,7 +137,7 @@ const Plans = () => {
             )}
         </div>
     </footer>
-    </motion.div>
+    </AuthenticatedLayout>
   );
 };
 

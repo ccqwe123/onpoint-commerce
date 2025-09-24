@@ -32,7 +32,7 @@ export default function Home({ orders }: OrderProps) {
                         </thead>
                         <tbody> {orders.data.map((order) => ( <tr key={order.id} className="odd:bg-[#fafafa] even:bg-white">
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200"> {order.id} </td>
-                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200"> </td>
+                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.client?.name}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.plan ? order.plan.name : '-'}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.items.reduce((total, item) => total + Number(item.quantity), 0)}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.subtotal}</td>

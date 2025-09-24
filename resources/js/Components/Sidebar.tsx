@@ -75,7 +75,7 @@ const Sidebar = () => {
             <nav className="flex-1 px-6 py-8 space-y-6">
               <Link
                 href="/plans"
-                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/plans") ? "bg-onpoint-btnblue text-white" : ""
                 }`}
               >
@@ -85,7 +85,7 @@ const Sidebar = () => {
 
               <Link
                 href="/product-categories"
-                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/product-categories") ? "bg-onpoint-btnblue text-white" : ""
                 }`}
               >
@@ -95,7 +95,7 @@ const Sidebar = () => {
 
               <Link
                 href="/quotation"
-                className={`flex items-center gap-3 p-3 rounded-xl hover:bg-white/10 transition ${
+                className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/quotation") ? "bg-onpoint-btnblue text-white" : ""
                 }`}
               >

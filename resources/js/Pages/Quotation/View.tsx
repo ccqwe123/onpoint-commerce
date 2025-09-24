@@ -84,10 +84,10 @@ export default function Home({ order }: OrderProps) {
                                     <span className="text-[#797979] font-normal text-lg">Payment Term</span>
                                     <span className="text-black font-semibold text-3xl">{order.payment == 'one-time' ? 'One Time' : order.payment == '6-months' ? '6 Months' : order.payment == '12-months' ? '12 Months' : order.payment == '24-months' ? '24 Months' : '-'}</span>
                                 </div>
-                                <div className="flex flex-col">
+                                {/* <div className="flex flex-col">
                                     <span className="text-[#797979] font-normal text-lg">Total Monthly</span>
                                     <span className="text-black font-semibold text-3xl">₱{getMonthlyPayment(order)}</span>
-                                </div>
+                                </div> */}
                             </div>
                         </div>
                     </div>

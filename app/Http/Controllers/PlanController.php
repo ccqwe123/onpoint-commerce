@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use App\Models\Order;
 use App\Models\Plan;
+use App\Models\Client;
 
 class PlanController extends Controller
 {
@@ -33,11 +34,20 @@ class PlanController extends Controller
             'payment' => 'required|string',
         ]);
 
-        // Example: save order
+        $clientId = $request->client_id;
+
+        if (empty($clientId) && $request->filled('client_name')) {
+            $client = Client::create([
+                'name' => $request->client_name,
+            ]);
+            $clientId = $client->id;
+        }
+
         $order = Order::create([
-            'plan_id' => $data['plan_id'],
-            'subtotal' => $data['subtotal'],
-            'payment' => $data['payment'],
+            'plan_id'   => $request->plan_id,
+            'subtotal'  => $request->subtotal,
+            'payment'   => $request->payment,
+            'client_id' => $clientId,
         ]);
 
         foreach ($data['cart'] as $item) {
@@ -53,7 +63,7 @@ class PlanController extends Controller
 
     public function planList() 
     {
-        $plans = Plan::with('descriptions')->paginate(10);
+        $plans = Plan::with('descriptions')->latest()->paginate(10);
 
         return Inertia::render('Plan/Index', [
             'plans' => $plans

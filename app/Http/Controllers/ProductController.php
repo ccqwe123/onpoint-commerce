@@ -219,7 +219,7 @@ class ProductController extends Controller
 
     public function quotation()
     {
-        $orders = Order::with(['items','plan'])->paginate(10);
+        $orders = Order::with(['items','plan','client'])->latest()->paginate(10);
 
         return Inertia::render('Quotation/Index', [
             'orders' => $orders,

@@ -30,6 +30,7 @@ export interface Order {
   subtotal: string;
   payment: string | null;
   items: OrderItem[];
+  client: Client | null;
 }
 
 export interface OrderItem {
@@ -47,6 +48,11 @@ export interface Product {
   category: Category;
 }
 export interface Category {
+  id: number;
+  name: string;
+}
+
+export interface Client {
   id: number;
   name: string;
 }
