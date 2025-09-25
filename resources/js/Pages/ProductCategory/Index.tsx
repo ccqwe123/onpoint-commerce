@@ -203,7 +203,8 @@ export default function ProductCategory({ categories }: PlansPageProps) {
                     show={showModal}
                     onClose={() => setShowModal(false)}
                     onConfirm={confirmToggle}
-                    isActive={ false}
+                    isActive={selectedCat?.is_active ?? false}
+                    type="Product"
                 />
             </div>
         </main>

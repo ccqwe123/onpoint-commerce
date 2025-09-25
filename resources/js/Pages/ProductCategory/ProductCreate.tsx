@@ -72,6 +72,7 @@ export default function CreateProduct({ category }: Props) {
         preserveScroll: true,
         onSuccess: () => {
         reset();
+        (window as any).showToast("Product created successfully.", "success");
         setUploadedFiles([]);
         },
     });

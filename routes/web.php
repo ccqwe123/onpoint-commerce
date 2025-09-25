@@ -75,6 +75,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/category/{category_id}/product/{product_id}', [ProductController::class, 'productEdit'])->name('category.product.edit');
     Route::post('/product/{id}/store', [ProductController::class, 'productStore'])->name('product.store');
     Route::post('/product/{id}/update', [ProductController::class, 'productUpdate'])->name('product.update');
+    Route::put('/product/{id}/toggle', [ProductController::class, 'productToggle'])->name('product.toggle');
 
     Route::get('/quotation', [ProductController::class, 'quotation'])->name('quotation.index');
     Route::get('/quotation/{id}/view', [ProductController::class, 'quotationView'])->name('quotation.view');

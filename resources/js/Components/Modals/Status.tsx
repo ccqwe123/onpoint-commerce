@@ -5,9 +5,10 @@ interface ToggleModalProps {
   onClose: () => void;
   onConfirm: () => void;
   isActive: boolean;
+  type: string;
 }
 
-const Status = ({ show, onClose, onConfirm, isActive }: ToggleModalProps) => (
+const Status = ({ show, onClose, onConfirm, isActive, type }: ToggleModalProps) => (
   <AnimatePresence>
     {show && (
       <motion.div
@@ -30,7 +31,7 @@ const Status = ({ show, onClose, onConfirm, isActive }: ToggleModalProps) => (
             {isActive ? "Set as Inactive?" : "Set as Active?"}
           </h2>
           <p className="text-gray-600 mb-6">
-            Are you sure you want to {isActive ? "deactivate" : "activate"} this plan?
+            Are you sure you want to {isActive ? "deactivate" : "activate"} this {type}?
           </p>
           <div className="flex justify-end gap-4">
             <button

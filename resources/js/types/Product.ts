@@ -21,11 +21,17 @@ export interface Product {
   price: string;
   discount_price: string;
   stock: number;
-  is_active: number;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
   images: ProductImage[];
   category?: Category;
+}
+
+export interface ToggleProduct {
+  id: number;
+  name: string;
+  is_active: boolean;
 }
 
 export interface ProductView {

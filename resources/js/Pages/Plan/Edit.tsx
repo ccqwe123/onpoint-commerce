@@ -2,9 +2,10 @@ import { useForm } from "@inertiajs/react";
 import React, { useState, useEffect } from 'react';
 import Header from "@/Components/Header";
 import { PlanData } from "@/types/Plan";
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, Save } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from '@/Components/Button';
 
 interface Props {
   plan: PlanData;
@@ -31,7 +32,7 @@ export default function EditPlan({ plan }: Props) {
     ) {
         setData("descriptions", [
         ...data.descriptions,
-        { id: null, name: "" }, // add new empty input
+        { id: null, plan_id: 0, name: "" },
         ]);
     }
     };
@@ -84,13 +85,9 @@ export default function EditPlan({ plan }: Props) {
                         <span className="cursor-default select-none">Edit Plan</span>
                     </div>
                     <div>
-                        <button
-                            type="submit"
-                            disabled={processing}
-                            className="px-4 py-2 bg-green-600 text-white rounded-md"
-                        >
-                            Save Changes
-                        </button>
+                        <Button type="submit" disabled={processing} className="gap-2 bg-onpoint-btnblue hover:bg-blue-500">
+                            <Save className="h-4 w-4" /> Save
+                        </Button>
                     </div>
                 </div>
 
@@ -203,7 +200,7 @@ export default function EditPlan({ plan }: Props) {
                             <button
                                 onClick={handleSubmit}
                                 disabled={loading}
-                                className="px-6 py-3 rounded-lg bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50"
+                                className="px-6 py-3 rounded-lg bg-onpoint-btnblue text-white hover:bg-blue-700 disabled:opacity-50"
                             >
                                 {loading ? "Updating..." : "Confirm"}
                             </button>

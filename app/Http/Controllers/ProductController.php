@@ -31,6 +31,13 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
+    public function fetchProductsByCategory($categoryId)
+    {
+        $products = Product::with(['images', 'category'])->where('category_id', $categoryId)->get();
+
+        return response()->json($products);
+    }
+
     public function getByIds(Request $request)
     {
         $ids = $request->input('ids', []);
@@ -87,6 +94,15 @@ class ProductController extends Controller
         $category->save();
 
         return redirect()->route('product-categories.index')->with('success', 'Category status updated successfully.');
+    }
+
+    public function productToggle($id)
+    {
+        $product = Product::findOrFail($id);
+        $product->is_active = !$product->is_active;
+        $product->save();
+
+        // return redirect()->route('product-categories.index')->with('success', 'Category status updated successfully.');
     }
 
     public function productList($id)
@@ -148,7 +164,7 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->back()->with('success', 'Product created successfully.');
+        return redirect()->route('product-categories.product.index',['id'=>$validated['category_id']])->with('success', 'Product created successfully.');
     }
 
     public function productEdit($category_id, $product_id)
@@ -193,8 +209,9 @@ class ProductController extends Controller
         $images = $request->input('images', []);
         $existingImages = array_filter($images, fn($img) => is_numeric($img));
         $newFiles = $request->file('images') ?? [];
-
-        $product->images()->whereNotIn('id', $existingImages)->delete();
+        if($images && $existingImages){
+            $product->images()->whereNotIn('id', $existingImages)->delete();
+        }
 
         foreach ($newFiles as $file) {
             $filename = uniqid('product_', true) . '.' . $file->getClientOriginalExtension();
@@ -213,8 +230,8 @@ class ProductController extends Controller
                 $image->save();
             }
         }
-
-        return redirect()->route('product-categories.index')->with('success', 'Category status updated successfully.');
+        
+        return redirect()->route('product-categories.product.index',['id'=>$product->category_id])->with('success', 'Product updated successfully.');
     }
 
     public function quotation()

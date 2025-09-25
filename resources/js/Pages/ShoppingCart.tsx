@@ -4,7 +4,7 @@ import Header from "@/Components/Header";
 import { Link } from "@inertiajs/react";
 import axios from "axios";
 import { Product } from "@/types/Product";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 
 function ShoppingCart() {
@@ -64,6 +64,38 @@ function ShoppingCart() {
     return `₱${price.toLocaleString("en-PH", { minimumFractionDigits: 2 })}`;
   };
 
+  const updateQuantity = (id: number, newQty: number) => {
+    if (newQty <= 0) {
+      removeItem(id);
+      return;
+    }
+
+    setCart((prev) => {
+      const next = { ...prev, [id]: newQty };
+      localStorage.setItem("cart", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const incrementQty = (id: number) => {
+    setCart((prev) => {
+      const next = { ...prev, [id]: (prev[id] || 0) + 1 };
+      localStorage.setItem("cart", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const decrementQty = (id: number) => {
+    setCart((prev) => {
+      const next = { ...prev, [id]: (prev[id] || 1) - 1 };
+      if (next[id] <= 0) {
+        delete next[id]; // remove if zero
+      }
+      localStorage.setItem("cart", JSON.stringify(next));
+      return next;
+    });
+  };
+
   return (
     <AuthenticatedLayout>
       <motion.div
@@ -107,18 +139,44 @@ function ShoppingCart() {
                   <div className="flex flex-col w-full gap-y-12">
                     <div className="flex justify-between items-start mb-1">
                       <h3 className="text-gray-900 text-xl font-medium">{item.name}</h3>
-                      <span className="text-gray-900 text-xl font-medium">
-                        {formatPrice(parseFloat(item.discount_price || item.price))}
-                      </span>
+                      <div className="flex items-center rounded-md border border-gray-200">
+                        <button
+                          onClick={() => decrementQty(item.id)}
+                          className="px-3 py-1"
+                        >
+                          -
+                        </button>
+                        <AnimatePresence mode="popLayout">
+                          <motion.span
+                            key={item.quantity} // re-renders whenever qty changes
+                            initial={{ scale: 0.8, opacity: 0, y: -5 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.8, opacity: 0, y: 5 }}
+                            transition={{ duration: 0.2 }}
+                            className="px-4 font-medium"
+                          >
+                            {item.quantity}
+                          </motion.span>
+                        </AnimatePresence>
+                        <button
+                          onClick={() => incrementQty(item.id)}
+                          className="px-3 py-1"
+                        >
+                          +
+                        </button>
+                      </div>
                     </div>
 
                     <div className="flex justify-between items-center">
-                      {item.stock > 0 && (
+                      <span className="text-gray-900 text-xl font-medium">
+                        {formatPrice(parseFloat(item.discount_price || item.price))}
+                      </span>
+                      {/* {item.stock > 0 && (
                         <div className="flex items-center text-green-600 text-base">
                           <Check className="w-4 h-4 mr-1" />
                           <span>In Stock</span>
                         </div>
-                      )}
+                      )} */}
                       <button
                         onClick={() => removeItem(item.id)}
                         className="text-blue-600 text-base hover:text-blue-800"

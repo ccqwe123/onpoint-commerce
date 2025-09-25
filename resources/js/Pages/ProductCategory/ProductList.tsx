@@ -1,22 +1,24 @@
 import Header from "@/Components/Header";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState } from "react";
-import { Category, Product } from "@/types/Product";
+import { Category, Product, ToggleProduct } from "@/types/Product";
 import Pagination from "@/Components/Pagination";
 import { Paginated } from "@/types/Pagination";
 import { ChevronLeft } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { Card } from '@/Components/ui/card';
+import { useForm } from "@inertiajs/react";
 
 interface Props {
   category: Category;
-  products: {
-    data: Product[];
-    current_page: number;
-    last_page: number;
-    links: { url: string | null; label: string; active: boolean }[];
-  };
+  products: Paginated<Product>;
+//   products: {
+//     data: Product[];
+//     current_page: number;
+//     last_page: number;
+//     links: { url: string | null; label: string; active: boolean }[];
+//   };
 }
 
 export default function ProductList({ category, products }: Props) {
@@ -24,32 +26,32 @@ export default function ProductList({ category, products }: Props) {
     const [showCreateModal, setShowFormModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Product | null>(null);
     const [selectedCat, setSelectedCat] = useState<Product | null>(null);
-    // const { data, setData, post, put, processing, errors, reset } = useForm<Product>({
-    //     id: 0,
-    //     name: "",
-    //     is_active: true,
-    // });
-    // const togglePlan = (category: Product) => {
-    //     setSelectedCat(category);
-    //     setShowModal(true);
-    // };
+    const { data, setData, post, put, processing, errors, reset } = useForm<ToggleProduct>({
+        id: 0,
+        name: "",
+        is_active: true,
+    });
+   const togglePlan = (prorduct: Product) => {
+        setSelectedCat(prorduct);
+        setShowModal(true);
+    };
 
     const confirmToggle = () => {
        if (!selectedCat) return;
 
-        // put(`/product-categories/${selectedCat.id}/toggle`, {
-        //     data: { is_active: !selectedCat.is_active },
-        //     onSuccess: () => {
-        //         setShowModal(false);
-        //         (window as any).showToast("Cate updated successfully ✅", "success");
-        //     },
-        //     onError: () => {
-        //         (window as any).showToast("Failed to update plan ❌", "error");
-        //     },
-        //     onFinish: () => {
-        //         setShowModal(false);
-        //     },
-        // });
+        put(`/product/${selectedCat.id}/toggle`, {
+            data: { is_active: !selectedCat.is_active },
+            onSuccess: () => {
+                setShowModal(false);
+                (window as any).showToast("Cate updated successfully ✅", "success");
+            },
+            onError: () => {
+                (window as any).showToast("Failed to update plan ❌", "error");
+            },
+            onFinish: () => {
+                setShowModal(false);
+            },
+        });
     };
     // const handleCreate = () => {
     //     setEditingCategory(null);
@@ -135,8 +137,8 @@ export default function ProductList({ category, products }: Props) {
                             <td className="px-6 py-4">
                                 <Link href={`/category/${category.id}/product/${product.id}`} className="text-black bg-white hover:bg-blue-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </Link>
                                 {product.is_active ? ( 
-                                    <button className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
-                                    <button className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
+                                    <button onClick={() => togglePlan(product)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
+                                    <button onClick={() => togglePlan(product)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
                                 )}
                             </td>
                         </tr> ))} </tbody>
@@ -153,7 +155,8 @@ export default function ProductList({ category, products }: Props) {
                     show={showModal}
                     onClose={() => setShowModal(false)}
                     onConfirm={confirmToggle}
-                    isActive={ false}
+                    isActive={selectedCat?.is_active ?? false}
+                    type="Product"
                 />
             </div>
         </main>

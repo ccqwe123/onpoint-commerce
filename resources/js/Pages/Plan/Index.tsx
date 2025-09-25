@@ -96,6 +96,7 @@ export default function PlanPage({ plans }: PlansPageProps) {
                     onClose={() => setShowModal(false)}
                     onConfirm={confirmToggle}
                     isActive={selectedPlan?.is_active ?? false}
+                    type="Plan"
                 />
             </div>
         </main>

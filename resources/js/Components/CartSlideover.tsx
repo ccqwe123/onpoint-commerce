@@ -132,7 +132,7 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
                                     ₱{(unit * product.quantity).toFixed(2)}
                                   </p>
                                 </div>
-                                <p className="mt-1 text-sm text-gray-500">{product.description}</p>
+                                <p className="mt-1 text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: product.description ?? "" }}></p>
 
                                 {/* Quantity controls */}
                                 <div className="mt-2 flex items-center gap-3">
