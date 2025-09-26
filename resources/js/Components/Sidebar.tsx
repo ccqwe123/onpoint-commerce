@@ -23,9 +23,7 @@ const Sidebar = () => {
   }, []);
 
   const isActive = (path: string) => currentUrl.includes(path);
-  console.log(isActive);
-  console.log(currentUrl);
-  console.log(isActive("/plans"));
+
   const logoutUser = async () => {
      try {
           await axios.get("/logout"),
@@ -74,6 +72,7 @@ const Sidebar = () => {
             {/* Menu */}
             <nav className="flex-1 px-6 py-8 space-y-6">
               <Link
+                onClick={closeSidebar}
                 href="/plans"
                 className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/plans") ? "bg-onpoint-btnblue text-white" : ""
@@ -84,6 +83,7 @@ const Sidebar = () => {
               </Link>
 
               <Link
+                onClick={closeSidebar}
                 href="/product-categories"
                 className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/product-categories") ? "bg-onpoint-btnblue text-white" : ""
@@ -94,6 +94,7 @@ const Sidebar = () => {
               </Link>
 
               <Link
+                onClick={closeSidebar}
                 href="/quotation"
                 className={`flex items-center gap-3 p-3 rounded-xl transition ${
                   isActive("/quotation") ? "bg-onpoint-btnblue text-white" : ""

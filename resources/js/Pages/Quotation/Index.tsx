@@ -1,32 +1,142 @@
 import Header from "@/Components/Header";
-import Pagination from "@/Components/Pagination";
+import PaginationWithSearch from "@/Components/PaginationWithSearch";
 import { Paginated } from "@/types/Pagination";
 import { Link } from "@inertiajs/react";
 import { Order } from "@/types/Plan";
 import { Card } from '@/Components/ui/card';
+import { useState, useEffect } from "react";
+import { ArrowUp, ArrowDown } from 'lucide-react';
 
 interface OrderProps {
   orders: Paginated<Order>;
+  filters: {
+    search?: string;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+  };
 }
 
 
-export default function Home({ orders }: OrderProps) {
+export default function Home({ orders: innitialOrders, filters }: OrderProps) {
+    const [search, setSearch] = useState(filters.search || "");
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    const [orders, setOrders] = useState<Paginated<Order>>(innitialOrders);
+
+    const nextSortDirection = (column: string) => {
+        if (filters.sort_by === column) {
+        return filters.sort_direction === "asc" ? "desc" : "asc";
+        }
+        return "asc";
+    };
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+        setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [search]);
+
+    useEffect(() => {
+        fetch(`/api/quotations?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        .then((res) => res.json())
+        .then((data) => setOrders(data));
+    }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
+
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Header />
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
-                <h1 className="text-2xl font-semibold text-black">Quotation</h1>
+                <div className="flex w-full justify-between">
+                    <h1 className="text-2xl font-semibold text-black">Quotation</h1>
+                    <div className="max-w-md">
+                        <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"> Search </label>
+                        <div className="relative">
+                            <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                    <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                </svg>
+                            </div>
+                            <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2.5 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." />
+                        </div>
+                    </div>
+                </div>
                 <Card className="relative overflow-x-auto">
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3">Quotation No.</th>
-                            <th className="px-6 py-3">Client Name</th>
-                            <th className="px-6 py-3">Monthly Plan</th>
-                            <th className="px-6 py-3">Device Qty.</th>
-                            <th className="px-6 py-3">Device Subtotal</th>
-                            <th className="px-6 py-3">Payment Termins</th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "id",
+                                sort_direction: nextSortDirection("id"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Quotation No. {filters.sort_by === "id" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "client_name",
+                                sort_direction: nextSortDirection("client_name"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Client Name {filters.sort_by === "client_name" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "plan_name",
+                                sort_direction: nextSortDirection("plan_name"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Monthly Plan {filters.sort_by === "plan_name" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "total_quantity",
+                                sort_direction: nextSortDirection("total_quantity"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Device Qty. {filters.sort_by === "total_quantity" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "subtotal",
+                                sort_direction: nextSortDirection("subtotal"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Device Subtotal {filters.sort_by === "subtotal" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/quotation`} data={{
+                                ...filters,
+                                sort_by: "payment",
+                                sort_direction: nextSortDirection("payment"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Payment Termins {filters.sort_by === "payment" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
                             <th className="px-6 py-3"></th>
                         </tr>
                         </thead>
@@ -43,10 +153,15 @@ export default function Home({ orders }: OrderProps) {
                         </tr> ))} </tbody>
                     </table>
                     <div className="px-5 py-3">
-                        <Pagination
+                        <PaginationWithSearch
                             current_page={orders.current_page}
                             last_page={orders.last_page}
                             links={orders.links}
+                            onPageChange={(url) => {
+                                fetch(url)
+                                .then(res => res.json())
+                                .then(data => setOrders(data));
+                            }}
                         />
                     </div>
                 </Card>

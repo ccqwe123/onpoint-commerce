@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\JsonController;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,6 +21,9 @@ use App\Http\Controllers\ClientController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+Route::get('/categories', [JsonController::class, 'fetchCategories']);
+Route::get('/products/{id}', [JsonController::class, 'fetchProducts']);
+Route::get('/quotations', [JsonController::class, 'fetchQuotations']);
 
 Route::get('/categories-products', [ProductController::class, 'index']);
 Route::get('/categories/{id}/products', [ProductController::class, 'getByCategory']);

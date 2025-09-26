@@ -46,12 +46,25 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
-    public function categoryList() 
+    public function categoryList(Request $request) 
     {
-        $categories = Category::with('products')->paginate(10);
+        $query = Category::query()->with('products');
+
+        if ($request->filled('search')) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDirection = $request->get('sort_direction', 'asc');
+
+        $categories = $query
+            ->orderBy($sortBy, $sortDirection)
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('ProductCategory/Index', [
-            'categories' => $categories
+            'categories' => $categories,
+            'filters' => $request->only('search', 'sort_by', 'sort_direction'),
         ]);
     }
 
@@ -63,7 +76,7 @@ class ProductController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories,name',
             'description' => 'nullable|string',
             'is_active' => 'required|boolean',
         ]);
@@ -76,7 +89,7 @@ class ProductController extends Controller
     public function update(Request $request, $id)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:categories,name,' . $id,
             'description' => 'nullable|string',
             'is_active' => 'required|boolean',
         ]);
@@ -105,14 +118,23 @@ class ProductController extends Controller
         // return redirect()->route('product-categories.index')->with('success', 'Category status updated successfully.');
     }
 
-    public function productList($id)
+    public function productList(Request $request, $id)
     {
-        $products = Product::with(['images'])->where('category_id',$id)->paginate(10);
+        $query = Product::with(['images'])->where('category_id',$id);
         $category = Category::findOrFail($id);
+
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDirection = $request->get('sort_direction', 'asc');
+
+        $products = $query
+            ->orderBy($sortBy, $sortDirection)
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('ProductCategory/ProductList', [
             'category' => $category,
-            'products' => $products
+            'products' => $products,
+            'filters' => $request->only('search', 'sort_by', 'sort_direction'),
         ]);
     }
 
@@ -234,12 +256,50 @@ class ProductController extends Controller
         return redirect()->route('product-categories.product.index',['id'=>$product->category_id])->with('success', 'Product updated successfully.');
     }
 
-    public function quotation()
+    public function quotation(Request $request)
     {
-        $orders = Order::with(['items','plan','client'])->latest()->paginate(10);
+        $sortBy = $request->get('sort_by', 'orders.id');
+        $sortDirection = $request->get('sort_direction', 'asc');
+
+        $query = Order::with(['items', 'plan', 'client'])
+            ->select('orders.*')
+            ->withSum('items as total_quantity', 'quantity') // aggregate
+            ->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+            ->leftJoin('plans', 'orders.plan_id', '=', 'plans.id');
+
+        switch ($sortBy) {
+            case 'client_name':
+                $query->orderBy('clients.name', $sortDirection);
+                break;
+
+            case 'plan_name':
+                $query->orderBy('plans.name', $sortDirection);
+                break;
+
+            case 'total_quantity':
+                $query->orderBy('total_quantity', $sortDirection);
+                break;
+
+            case 'subtotal':
+                $query->orderBy('orders.subtotal', $sortDirection);
+                break;
+
+            case 'payment':
+                $query->orderBy('orders.payment', $sortDirection);
+                break;
+
+            default:
+                $query->orderBy('orders.id', $sortDirection);
+                break;
+        }
+
+        $orders = $query
+            ->paginate(10)
+            ->withQueryString();
 
         return Inertia::render('Quotation/Index', [
             'orders' => $orders,
+            'filters' => $request->only('search', 'sort_by', 'sort_direction'),
         ]);
     }
 

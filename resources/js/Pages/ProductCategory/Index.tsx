@@ -1,8 +1,9 @@
 import Header from "@/Components/Header";
+import { ArrowUp, ArrowDown } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Category } from "@/types/Product";
-import Pagination from "@/Components/Pagination";
+import PaginationWithSearch from "@/Components/PaginationWithSearch";
 import { Paginated } from "@/types/Pagination";
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
@@ -11,18 +12,48 @@ import { Card } from '@/Components/ui/card';
 
 interface PlansPageProps {
   categories: Paginated<Category>;
+  filters: {
+    search?: string;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+  };
 }
 
-export default function ProductCategory({ categories }: PlansPageProps) {
+export default function ProductCategory({ categories: initialCategories, filters }: PlansPageProps) {
     const [showModal, setShowModal] = useState(false);
     const [showCreateModal, setShowFormModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
     const [selectedCat, setSelectedCat] = useState<Category | null>(null);
+    const [search, setSearch] = useState(filters.search || "");
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    const [categories, setCategories] = useState<Paginated<Category>>(initialCategories);
     const { data, setData, post, put, processing, errors, reset } = useForm<Category>({
         id: 0,
         name: "",
         is_active: true,
     });
+
+    const nextSortDirection = (column: string) => {
+        if (filters.sort_by === column) {
+        return filters.sort_direction === "asc" ? "desc" : "asc";
+        }
+        return "asc";
+    };
+    
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+        setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [search]);
+
+    useEffect(() => {
+        fetch(`/api/categories?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        .then((res) => res.json())
+        .then((data) => setCategories(data));
+    }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
+    
     const togglePlan = (category: Category) => {
         setSelectedCat(category);
         setShowModal(true);
@@ -35,7 +66,13 @@ export default function ProductCategory({ categories }: PlansPageProps) {
         data: { is_active: !selectedCat.is_active },
         onSuccess: () => {
             setShowModal(false);
-            (window as any).showToast("Cate updated successfully ✅", "success");
+            setCategories((prev) => ({
+                ...prev,
+                data: prev.data.map((p) =>
+                p.id === selectedCat.id ? { ...p, is_active: !selectedCat.is_active } : p
+                ),
+            }));
+            (window as any).showToast("Category updated successfully ✅", "success");
         },
         onError: () => {
             (window as any).showToast("Failed to update plan ❌", "error");
@@ -98,7 +135,20 @@ export default function ProductCategory({ categories }: PlansPageProps) {
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-semibold text-gray-900">Product Categories</h1>
-                    <div >
+                    
+    
+                    <div className="flex gap-2">
+                        <div className="max-w-md mx-auto">
+                            <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"> Search </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                    </svg>
+                                </div>
+                                <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." />
+                            </div>
+                        </div>
                         <button onClick={() => handleCreate()} className="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
                             Add Category
                         </button>
@@ -162,11 +212,45 @@ export default function ProductCategory({ categories }: PlansPageProps) {
                 <Card className="relative overflow-x-auto">
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
-                        <tr>
-                            <th className="px-6 py-3 w-[50%]">Category name</th>
-                            <th className="px-6 py-3 w-[20%]">Status</th>
-                            <th className="px-6 py-3 w-full">Actions</th>
-                        </tr>
+                            <tr>
+                                <th className="px-6 py-3 cursor-pointer w-[50%]">
+                                    <Link
+                                        href="/product-categories"
+                                        data={{
+                                            ...filters,
+                                            sort_by: "name",
+                                            sort_direction: nextSortDirection("name"),
+                                        }}
+                                        preserveState
+                                        replace
+                                        >
+                                        <span className="inline-flex items-center">
+                                            Category name
+                                            {filters.sort_by === "name" &&
+                                            (filters.sort_direction === "asc" ? (
+                                                <ArrowUp className="ml-1 w-3 h-3" />
+                                            ) : (
+                                                <ArrowDown className="ml-1 w-3 h-3" />
+                                            ))}
+                                        </span>
+                                    </Link>
+                                </th>
+                                <th className="px-6 py-3 cursor-pointer w-[20%]">
+                                    <Link href="/product-categories" 
+                                    data={{
+                                        ...filters,
+                                        sort_by: "is_active",
+                                        sort_direction: nextSortDirection("is_active"),
+                                    }} 
+                                    preserveState replace>
+                                    <span className="inline-flex items-center"> Status {filters.sort_by === "is_active" && (filters.sort_direction === "asc" ? (
+                                        <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                        <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                    </span>
+                                    </Link>
+                                </th>
+                                <th className="px-6 py-3 w-full">Actions</th>
+                            </tr>
                         </thead>
                         <tbody> {categories.data.map((category) => ( <tr key={category.id} className="odd:bg-[#fafafa] even:bg-white">
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap"> {category.name} </td>
@@ -192,10 +276,15 @@ export default function ProductCategory({ categories }: PlansPageProps) {
                         </tr> ))} </tbody>
                     </table>
                     <div className="px-5 py-3">
-                        <Pagination
+                        <PaginationWithSearch
                             current_page={categories.current_page}
                             last_page={categories.last_page}
                             links={categories.links}
+                            onPageChange={(url) => {
+                                fetch(url)
+                                .then(res => res.json())
+                                .then(data => setCategories(data));
+                            }}
                         />
                     </div>
                 </Card>

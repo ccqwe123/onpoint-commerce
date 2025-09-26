@@ -16,7 +16,7 @@ export default defineConfig({
         strictPort: true,
         cors: true,
         hmr: {
-        host: "192.168.0.157", // 🔥 your computer's LAN IP
+        host: "192.168.0.158", // 🔥 your computer's LAN IP
         },
     },
 });

@@ -1,10 +1,10 @@
 import Header from "@/Components/Header";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Category, Product, ToggleProduct } from "@/types/Product";
-import Pagination from "@/Components/Pagination";
+import PaginationWithSearch from "@/Components/PaginationWithSearch";
 import { Paginated } from "@/types/Pagination";
-import { ChevronLeft } from 'lucide-react';
+import { ChevronLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { Card } from '@/Components/ui/card';
@@ -13,24 +13,47 @@ import { useForm } from "@inertiajs/react";
 interface Props {
   category: Category;
   products: Paginated<Product>;
-//   products: {
-//     data: Product[];
-//     current_page: number;
-//     last_page: number;
-//     links: { url: string | null; label: string; active: boolean }[];
-//   };
+  filters: {
+    search?: string;
+    sort_by?: string;
+    sort_direction?: "asc" | "desc";
+  };
 }
 
-export default function ProductList({ category, products }: Props) {
+export default function ProductList({ category, products: initialProducts, filters }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [showCreateModal, setShowFormModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Product | null>(null);
     const [selectedCat, setSelectedCat] = useState<Product | null>(null);
+    const [search, setSearch] = useState(filters.search || "");
+    const [debouncedSearch, setDebouncedSearch] = useState(search);
+    const [products, setProducts] = useState<Paginated<Product>>(initialProducts);
     const { data, setData, post, put, processing, errors, reset } = useForm<ToggleProduct>({
         id: 0,
         name: "",
         is_active: true,
     });
+
+    const nextSortDirection = (column: string) => {
+        if (filters.sort_by === column) {
+        return filters.sort_direction === "asc" ? "desc" : "asc";
+        }
+        return "asc";
+    };
+
+    useEffect(() => {
+        const handler = setTimeout(() => {
+        setDebouncedSearch(search);
+        }, 500);
+        return () => clearTimeout(handler);
+    }, [search]);
+
+    useEffect(() => {
+        fetch(`/api/products/${category.id}?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        .then((res) => res.json())
+        .then((data) => setProducts(data));
+    }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
+
    const togglePlan = (prorduct: Product) => {
         setSelectedCat(prorduct);
         setShowModal(true);
@@ -43,7 +66,13 @@ export default function ProductList({ category, products }: Props) {
             data: { is_active: !selectedCat.is_active },
             onSuccess: () => {
                 setShowModal(false);
-                (window as any).showToast("Cate updated successfully ✅", "success");
+                setProducts((prev) => ({
+                    ...prev,
+                    data: prev.data.map((p) =>
+                    p.id === selectedCat.id ? { ...p, is_active: !selectedCat.is_active } : p
+                    ),
+                }));
+                (window as any).showToast("Product updated successfully ✅", "success");
             },
             onError: () => {
                 (window as any).showToast("Failed to update plan ❌", "error");
@@ -81,7 +110,18 @@ export default function ProductList({ category, products }: Props) {
                         </Link>
                         <span className="cursor-default select-none">{category.name}</span>
                     </div>
-                    <div >
+                    <div className="flex gap-2">
+                        <div className="max-w-md mx-auto">
+                            <label className="mb-2 text-sm font-medium text-gray-900 sr-only dark:text-white"> Search </label>
+                            <div className="relative">
+                                <div className="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+                                    <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+                                        <path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
+                                    </svg>
+                                </div>
+                                <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2.5 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." />
+                            </div>
+                        </div>
                         <Link href={`/product/${category.id}/create`} className="text-black border border-gray-400 bg-white hover:bg-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
                             Add Product
                         </Link>
@@ -116,8 +156,50 @@ export default function ProductList({ category, products }: Props) {
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                         <tr>
-                            <th className="px-6 py-3 w-[50%]">Product name</th>
-                            <th className="px-6 py-3 w-[20%]">Status</th>
+                            <th className="px-6 py-3 w-[50%]">
+                                <Link
+                                    href={`/category/${category.id}/product-list`}
+                                    data={{
+                                        ...filters,
+                                        sort_by: "name",
+                                        sort_direction: nextSortDirection("name"),
+                                    }}
+                                    preserveState
+                                    replace
+                                    >
+                                    <span className="inline-flex items-center">
+                                        Product name
+                                        {filters.sort_by === "name" &&
+                                        (filters.sort_direction === "asc" ? (
+                                            <ArrowUp className="ml-1 w-3 h-3" />
+                                        ) : (
+                                            <ArrowDown className="ml-1 w-3 h-3" />
+                                        ))}
+                                    </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3 w-[20%]">
+                                <Link
+                                    href={`/category/${category.id}/product-list`}
+                                    data={{
+                                        ...filters,
+                                        sort_by: "is_active",
+                                        sort_direction: nextSortDirection("is_active"),
+                                    }}
+                                    preserveState
+                                    replace
+                                    >
+                                    <span className="inline-flex items-center">
+                                        Status
+                                        {filters.sort_by === "is_active" &&
+                                        (filters.sort_direction === "asc" ? (
+                                            <ArrowUp className="ml-1 w-3 h-3" />
+                                        ) : (
+                                            <ArrowDown className="ml-1 w-3 h-3" />
+                                        ))}
+                                    </span>
+                                </Link>
+                            </th>
                             <th className="px-6 py-3 w-full">Actions</th>
                         </tr>
                         </thead>
@@ -142,14 +224,19 @@ export default function ProductList({ category, products }: Props) {
                                 )}
                             </td>
                         </tr> ))} </tbody>
-                        <div className="px-5 py-3">
-                            <Pagination
+                    </table>
+                        <div className="px-5 py-3 w-full">
+                            <PaginationWithSearch
                                 current_page={products.current_page}
                                 last_page={products.last_page}
                                 links={products.links}
+                                onPageChange={(url) => {
+                                    fetch(url)
+                                    .then(res => res.json())
+                                    .then(data => setProducts(data));
+                                }}
                             />
                         </div>
-                    </table>
                 </Card>
                  <Status
                     show={showModal}
