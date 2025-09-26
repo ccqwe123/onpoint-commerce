@@ -8,6 +8,7 @@ export interface Plan {
   id: number;
   name: string;
   price: string | null;
+  description: string | null;
   discount_price: string | null;
   type: "monthly" | "annual" | "custom";
   descriptions: string[];
@@ -18,6 +19,7 @@ export interface PlanData {
   id: number;
   name: string;
   price: string | null;
+  description: string | null;
   discount_price: string | null;
   type: "monthly" | "annual" | "custom";
   is_active: boolean;

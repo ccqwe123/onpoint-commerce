@@ -17,6 +17,7 @@ export default function EditPlan({ plan }: Props) {
   const { data, setData, put, processing, errors } = useForm({
     name: plan.name,
     price: plan.price ?? "",
+    description: plan.description ?? "",
     is_active: plan.is_active,
     descriptions: plan.descriptions,
   });
@@ -151,16 +152,24 @@ export default function EditPlan({ plan }: Props) {
 
                     {/* Pricing */}
                     <div>
-                    <h2 className="text-lg font-medium mb-4">Pricing</h2>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Base Price</label>
-                        <input
-                        type="number"
-                        value={data.price || ""}
-                        onChange={(e) => setData("price", e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
-                        />
+                        <h2 className="text-lg font-medium mb-4">Plan Description</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Description</label>
+                            <textarea name="" className="mt-1 block w-full rounded-md border-gray-300 shadow-sm" 
+                            onChange={(e) => setData("description", e.target.value)}>{data.description || ""}</textarea>
+                        </div>
                     </div>
+                    <div>
+                        <h2 className="text-lg font-medium mb-4">Pricing</h2>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700">Base Price</label>
+                            <input
+                            type="number"
+                            value={data.price || ""}
+                            onChange={(e) => setData("price", e.target.value)}
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm"
+                            />
+                        </div>
                     </div>
 
                     {/* Submit */}
