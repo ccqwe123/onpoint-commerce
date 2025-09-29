@@ -127,7 +127,7 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
                 <div className="mt-6 flex justify-start md:justify-start">
                   <button
                     onClick={handleAddToCart}
-                    disabled={product.stock === 0 || added}
+                    disabled={added}
                     className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg transition-colors font-semibold
                       ${added ? "bg-green-600 text-white" : "bg-onpoint-btnblue text-white hover:bg-onpoint-dark-blue"}
                     `}

@@ -1,7 +1,12 @@
 import { useSidebar } from "@/context/SidebarContext";
 import { Link } from "@inertiajs/react";
+import { User } from "@/types/User";
 
-const Header = () => {
+interface HeaderProps {
+  user: User;
+}
+
+const Header = ({ user }: HeaderProps) => {
   const { openSidebar } = useSidebar();
   return (
     <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100">

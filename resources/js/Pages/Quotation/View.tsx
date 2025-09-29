@@ -1,13 +1,16 @@
-import Header from "@/Components/Header";
-import Pagination from "@/Components/Pagination";
-import { Paginated } from "@/types/Pagination";
 import { Link } from "@inertiajs/react";
 import { Order, PlanData } from "@/types/Plan";
-import { ChevronLeft, Check } from 'lucide-react';
+import { Printer, ChevronLeft, Loader2 } from 'lucide-react';
+import { useRef, useState } from "react";
+import { useReactToPrint } from "react-to-print";
+import Print from "@/Pages/Quotation/Print";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface OrderProps {
   order: Order
 }
+type ViewProps = PageProps & OrderProps;
 
 function getPaymentMonths(payment: string | null): number {
   switch (payment) {
@@ -44,11 +47,25 @@ function getMonthlyPayment(order: Order): string {
   return formatCurrency(monthly);
 }
 
-export default function Home({ order }: OrderProps) {
-    console.log(order.plan?.descriptions);
+export default function Home({ auth, order }: ViewProps) {
+    const printRef = useRef<HTMLDivElement>(null);
+    const [isPrinting, setIsPrinting] = useState(false);
+    
+    const handlePrint = useReactToPrint({
+      contentRef: printRef, 
+      documentTitle: "Quotation",
+      onPrintError: () => setIsPrinting(false),
+    });
+     const startPrint = async () => {
+      setIsPrinting(true);
+      try {
+        await handlePrint();
+      } finally {
+        setTimeout(() => setIsPrinting(false), 1500);
+      }
+    };
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+    <AuthenticatedLayout user={auth.user}>
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex items-center justify-between">
@@ -57,6 +74,21 @@ export default function Home({ order }: OrderProps) {
                             <ChevronLeft size={28} className="mr-1" />
                         </Link>
                         <span className="cursor-default select-none">Quotation No. {order?.id}</span>
+                    </div>
+                    <button
+                      onClick={startPrint}
+                      disabled={isPrinting}
+                      className="bg-onpoint-btnblue px-4 py-2 flex justify-center items-center gap-2 text-white rounded-lg hover:bg-blue-900 disabled:opacity-60"
+                    >
+                      {isPrinting ? (
+                        <Loader2 className="w-4 h-4 shrink-0 animate-spin text-white" />
+                      ) : (
+                        <Printer className="w-4 h-4 shrink-0 text-white" />
+                      )}
+                      {isPrinting ? "Printing..." : "Print"}
+                    </button>
+                    <div className="hidden">
+                      <Print ref={printRef} order={order} />
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
@@ -98,6 +130,6 @@ export default function Home({ order }: OrderProps) {
                 </div>
             </div>
         </main>
-    </div>
+    </AuthenticatedLayout>
   );
 }

@@ -18,9 +18,8 @@ return new class extends Migration
             $table->foreignId('plan_id')->constrained()->onDelete('cascade');
             $table->decimal('subtotal', 10, 2);
             $table->string('payment');
-            $table->foreignId('client_id')
-                  ->constrained('clients')
-                  ->cascadeOnDelete();
+            $table->foreignId('client_id')->constrained('clients')->cascadeOnDelete();
+            $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->timestamps();
         });
     }

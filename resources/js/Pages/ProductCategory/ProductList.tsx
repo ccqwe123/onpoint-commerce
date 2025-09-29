@@ -3,12 +3,15 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Category, Product, ToggleProduct } from "@/types/Product";
 import PaginationWithSearch from "@/Components/PaginationWithSearch";
+import Pagination from "@/Components/Pagination";
 import { Paginated } from "@/types/Pagination";
 import { ChevronLeft, ArrowUp, ArrowDown } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { Card } from '@/Components/ui/card';
 import { useForm } from "@inertiajs/react";
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface Props {
   category: Category;
@@ -19,8 +22,9 @@ interface Props {
     sort_direction?: "asc" | "desc";
   };
 }
+type ProductCategoryProps = PageProps & Props;
 
-export default function ProductList({ category, products: initialProducts, filters }: Props) {
+export default function ProductList({ auth, category, products: initialProducts, filters }: ProductCategoryProps) {
     const [showModal, setShowModal] = useState(false);
     const [showCreateModal, setShowFormModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Product | null>(null);
@@ -49,7 +53,7 @@ export default function ProductList({ category, products: initialProducts, filte
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/products/${category.id}?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        fetch(`/api/products/${category.id}?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
         .then((res) => res.json())
         .then((data) => setProducts(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
@@ -99,8 +103,7 @@ export default function ProductList({ category, products: initialProducts, filte
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+    <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex justify-between items-center">
@@ -231,9 +234,11 @@ export default function ProductList({ category, products: initialProducts, filte
                                 last_page={products.last_page}
                                 links={products.links}
                                 onPageChange={(url) => {
-                                    fetch(url)
-                                    .then(res => res.json())
-                                    .then(data => setProducts(data));
+                                    const apiUrl = url.replace(`/category/${category.id}/product-list`, `/api/products/${category.id}`);
+    
+                                    fetch(apiUrl)
+                                        .then((res) => res.json())
+                                        .then((data) => setProducts(data));
                                 }}
                             />
                         </div>
@@ -247,6 +252,6 @@ export default function ProductList({ category, products: initialProducts, filte
                 />
             </div>
         </main>
-    </div>
+    </AuthenticatedLayout>
   );
 }

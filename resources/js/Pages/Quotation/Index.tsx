@@ -6,6 +6,8 @@ import { Order } from "@/types/Plan";
 import { Card } from '@/Components/ui/card';
 import { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface OrderProps {
   orders: Paginated<Order>;
@@ -15,9 +17,9 @@ interface OrderProps {
     sort_direction?: "asc" | "desc";
   };
 }
+type Props = PageProps & OrderProps;
 
-
-export default function Home({ orders: innitialOrders, filters }: OrderProps) {
+export default function Home({ auth, orders: innitialOrders, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [orders, setOrders] = useState<Paginated<Order>>(innitialOrders);
@@ -37,14 +39,13 @@ export default function Home({ orders: innitialOrders, filters }: OrderProps) {
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/quotations?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        fetch(`/api/quotations?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
         .then((res) => res.json())
         .then((data) => setOrders(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-      <Header />
+    <AuthenticatedLayout user={auth.user}>
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex w-full justify-between">
@@ -140,7 +141,7 @@ export default function Home({ orders: innitialOrders, filters }: OrderProps) {
                             <th className="px-6 py-3"></th>
                         </tr>
                         </thead>
-                        <tbody> {orders.data.map((order) => ( <tr key={order.id} className="odd:bg-[#fafafa] even:bg-white">
+                        <tbody> {orders?.data?.map((order) => ( <tr key={order.id} className="odd:bg-[#fafafa] even:bg-white">
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200"> {order.id} </td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.client?.name}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.plan ? order.plan.name : '-'}</td>
@@ -153,20 +154,27 @@ export default function Home({ orders: innitialOrders, filters }: OrderProps) {
                         </tr> ))} </tbody>
                     </table>
                     <div className="px-5 py-3">
-                        <PaginationWithSearch
-                            current_page={orders.current_page}
-                            last_page={orders.last_page}
-                            links={orders.links}
-                            onPageChange={(url) => {
-                                fetch(url)
-                                .then(res => res.json())
-                                .then(data => setOrders(data));
-                            }}
-                        />
+                        {orders && orders.current_page && (
+                            <PaginationWithSearch
+                                current_page={orders.current_page}
+                                last_page={orders.last_page}
+                                links={orders.links}
+                                onPageChange={(url) => {
+                                    if (!url) return;
+
+                                    const params = new URL(url).searchParams.toString();
+
+                                    fetch(`/api/quotations?${params}`)
+                                        .then((res) => res.json())
+                                        .then((data) => setOrders(data));
+                                }}
+                            />
+                            )}
+
                     </div>
                 </Card>
             </div>
         </main>
-    </div>
+    </AuthenticatedLayout>
   );
 }

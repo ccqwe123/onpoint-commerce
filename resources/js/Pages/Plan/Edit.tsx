@@ -6,12 +6,14 @@ import { ChevronLeft, Save } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from '@/Components/Button';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface Props {
   plan: PlanData;
 }
-
-export default function EditPlan({ plan }: Props) {
+type EditProps = PageProps & Props;
+export default function EditPlan({ auth, plan }: EditProps) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const { data, setData, put, processing, errors } = useForm({
@@ -74,8 +76,7 @@ export default function EditPlan({ plan }: Props) {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+    <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <form onSubmit={openConfirmModal} className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex items-center justify-between">
@@ -219,6 +220,6 @@ export default function EditPlan({ plan }: Props) {
                     )}
                 </AnimatePresence>
             </main>
-        </div>
+        </AuthenticatedLayout>
   );
 }

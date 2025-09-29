@@ -33,14 +33,16 @@ export interface Order {
   payment: string | null;
   items: OrderItem[];
   client: Client | null;
+  user: User | null;
+  created_at: string;
 }
 
 export interface OrderItem {
   id: number;
   order_id: number;
   product_id: number;
-  quantity: string;
-  price: string;
+  quantity: number;
+  price: number;
   product: Product;
 }
 
@@ -58,3 +60,11 @@ export interface Client {
   id: number;
   name: string;
 }
+
+export interface User {
+  id: number;
+  name: string;
+  email: string;
+  position: string;
+}
+

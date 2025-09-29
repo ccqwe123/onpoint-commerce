@@ -35,3 +35,5 @@ Route::get('/plan/{id}', [PlanController::class, 'getPlan']);
 Route::post('/orders', [PlanController::class, 'order']);
 Route::get('/clients/search', [ClientController::class, 'search']);
 
+Route::get('/plans',[JsonController::class,'landingpagePlans']);
+

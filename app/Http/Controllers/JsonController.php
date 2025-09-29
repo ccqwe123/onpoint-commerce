@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
+use App\Models\Plan;
 
 class JsonController extends Controller
 {
@@ -20,9 +21,13 @@ class JsonController extends Controller
         $sortBy = $request->get('sort_by', 'id');
         $sortDirection = $request->get('sort_direction', 'asc');
 
+        $sortBy = is_string($sortBy) ? $sortBy : 'id';
+        $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'asc';
+
         return $query
             ->orderBy($sortBy, $sortDirection)
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->all());
     }
     public function fetchProducts(Request $request, $id)
     {
@@ -35,9 +40,13 @@ class JsonController extends Controller
         $sortBy = $request->get('sort_by', 'id');
         $sortDirection = $request->get('sort_direction', 'asc');
 
+        $sortBy = is_string($sortBy) ? $sortBy : 'id';
+        $sortDirection = in_array($sortDirection, ['asc', 'desc']) ? $sortDirection : 'asc';
+
         return $query
             ->orderBy($sortBy, $sortDirection)
-            ->paginate(10);
+            ->paginate(10)
+            ->appends($request->all());
     }
 
     public function fetchQuotations(Request $request)
@@ -64,15 +73,15 @@ class JsonController extends Controller
 
         switch ($sortBy) {
             case 'client_name':
-                $query->join('clients', 'orders.client_id', '=', 'clients.id')
-                    ->orderBy('clients.name', $sortDirection)
-                    ->select('orders.*');
+                $query->leftJoin('clients', 'orders.client_id', '=', 'clients.id')
+                    ->select('orders.*')
+                    ->orderBy('clients.name', $sortDirection);
                 break;
 
             case 'plan_name':
-                $query->join('plans', 'orders.plan_id', '=', 'plans.id')
-                    ->orderBy('plans.name', $sortDirection)
-                    ->select('orders.*');
+                $query->leftJoin('plans', 'orders.plan_id', '=', 'plans.id')
+                    ->select('orders.*')
+                    ->orderBy('plans.name', $sortDirection);
                 break;
 
             case 'total_quantity':
@@ -93,7 +102,13 @@ class JsonController extends Controller
                 break;
         }
 
-        return $query->paginate(10)->appends($request->query());
+        return $query->paginate(10)->appends($request->all());
     }
 
+    public function landingpagePlans()
+    {
+        $plan = Plan::with('descriptions')->get();
+
+        return response()->json($plan);
+    }
 }

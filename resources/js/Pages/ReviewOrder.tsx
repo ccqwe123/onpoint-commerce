@@ -8,6 +8,7 @@ import { Client } from "@/types/Plan";
 import { Plan } from "@/types/Plan";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types"; 
 
 interface ReviewOrderProps {
   onContinue: () => void;
@@ -48,7 +49,7 @@ function getMonthlyPayment(payment: string, plan:any , subt:any): string {
   return formatCurrency(monthly);
 }
 
-const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
+export default function ReviewOrder({ auth }: PageProps) {
     const [cart, setCart] = useState<Record<number, number>>({});
     const [plans, setPlans] = useState<Plan | null>(null);
     const [cartItems, setCartItems] = useState<(Product & { quantity: number })[]>([]);
@@ -102,6 +103,7 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
             plan_id: plans.id,
             client_id: clientId,
             client_name: clientId ? null : clientName,
+            user_id : auth.user.id,
             cart: cartItems.map(item => ({
                 product_id: item.id,
                 quantity: item.quantity,
@@ -145,6 +147,7 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
                     discount_price: plan.discount_price,
                     type: plan.type,
                     is_active: plan.is_active,
+                    description: plan.description,
                     descriptions: plan.descriptions?.map((d: any) => d.name) || [],
                 };
                 setPlans(mappedPlan);
@@ -186,7 +189,7 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
     };
 
     return (
-        <AuthenticatedLayout>
+        <AuthenticatedLayout user={auth.user}>
         <motion.div className="flex-1 px-16"
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -347,5 +350,3 @@ const ReviewOrder: React.FC<ReviewOrderProps> = ({ onContinue }) => {
     </AuthenticatedLayout>
   );
 };
-
-export default ReviewOrder;

@@ -35,6 +35,7 @@ class PlanController extends Controller
         ]);
 
         $clientId = $request->client_id;
+        $userId = $request->user_id;
 
         if (empty($clientId) && $request->filled('client_name')) {
             $client = Client::create([
@@ -48,6 +49,7 @@ class PlanController extends Controller
             'subtotal'  => $request->subtotal,
             'payment'   => $request->payment,
             'client_id' => $clientId,
+            'user_id' => $userId,
         ]);
 
         foreach ($data['cart'] as $item) {
@@ -82,11 +84,12 @@ class PlanController extends Controller
     public function update(Request $request, $id)
     {
         $plan = Plan::findOrFail($id);
-
+ 
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'is_active' => 'boolean',
             'price' => 'nullable|numeric',
+            'description' => 'nullable|string',
             'descriptions' => 'array',
             'descriptions.*.id' => 'nullable|integer|exists:plan_descriptions,id',
         ]);
@@ -95,6 +98,8 @@ class PlanController extends Controller
             'name' => $validated['name'],
             'is_active' => $validated['is_active'],
             'price' => $validated['price'],
+            'price' => $validated['price'],
+            'description' => $validated['description'],
         ]);
         
         $descriptions = collect($request->input('descriptions', []))

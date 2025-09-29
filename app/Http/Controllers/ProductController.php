@@ -14,8 +14,16 @@ class ProductController extends Controller
 {
     public function index()
     {
-        $categories = Category::with(['products.images'])
-            ->where('is_active', true)
+        // $categories = Category::with(['products.images'])
+        //     ->where('is_active', 1)
+        //     ->get();
+        $categories = Category::with(['products' => function ($q) {
+                $q->where('is_active', 1)->with('images');
+            }])
+            ->whereHas('products', function ($q) {
+                $q->where('is_active', 1);
+            })
+            ->where('is_active', 1)
             ->get();
 
         return response()->json($categories);
@@ -149,7 +157,7 @@ class ProductController extends Controller
     public function productStore(Request $request, $id)
     {
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
+            'name' => 'required|string|max:255|unique:products,name',
             'status' => 'required|boolean',
             'description' => 'required|nullable|string',
             'price' => 'required|numeric',
@@ -298,14 +306,15 @@ class ProductController extends Controller
             ->withQueryString();
 
         return Inertia::render('Quotation/Index', [
-            'orders' => $orders,
+            // 'orders' => $orders,
             'filters' => $request->only('search', 'sort_by', 'sort_direction'),
         ]);
     }
 
     public function quotationView($id)
     {
-        $order = Order::with(['items.product.category', 'plan.descriptions'])->where('id', $id)->firstOrFail();
+        $order = Order::with(['items.product.category', 'plan.descriptions','user','client'])->where('id', $id)->firstOrFail();
+
         return Inertia::render('Quotation/View', [
             'order' => $order,
         ]);

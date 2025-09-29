@@ -60,9 +60,10 @@ class DatabaseSeeder extends Seeder
             ]);
         }
         DB::table('users')->insert([
-            'name' => 'admin',
+            'name' => 'Mr. Pogi',
             'email' => 'onpoint@admin.com',
             'password' => Hash::make('admin'),
+            'position' => 'Business Developement Manager'
         ]);
         // \App\Models\User::factory(10)->create();
 

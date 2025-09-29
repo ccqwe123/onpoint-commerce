@@ -9,14 +9,16 @@ import { Product, ProductView } from "@/types/Product";
 import CartSlideover from "@/Components/CartSlideover";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface Category {
   id: number;
   name: string;
   products: Product[];
 }
+type ProductCategoryProps = PageProps & Category;
 
-const Products = () => {
+const Products = ({auth}: ProductCategoryProps) => {
   const [loading, setLoading] = useState(true);
   const [openCart, setOpenCart] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -44,7 +46,7 @@ const Products = () => {
   }, []);
 
   const addToCart = (productId: number) => {
-    if (added) return;
+    // if (added) return;
     setAdded(true);
     setAddedProducts((prev) => new Set([...prev, productId]));
     const next = { ...cart, [productId]: (cart[productId] || 0) + 1 };
@@ -86,7 +88,7 @@ const Products = () => {
   );
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout user={auth.user}>
       <motion.div
   className="flex-1 p-16 pb-28"
   initial={{ opacity: 0, scale: 0.98 }}

@@ -4,11 +4,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Category } from "@/types/Product";
 import PaginationWithSearch from "@/Components/PaginationWithSearch";
+import Pagination from "@/Components/Pagination";
 import { Paginated } from "@/types/Pagination";
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { useForm } from "@inertiajs/react";
 import { Card } from '@/Components/ui/card';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface PlansPageProps {
   categories: Paginated<Category>;
@@ -18,8 +21,13 @@ interface PlansPageProps {
     sort_direction?: "asc" | "desc";
   };
 }
+type ProductCategoryProps = PageProps & PlansPageProps;
 
-export default function ProductCategory({ categories: initialCategories, filters }: PlansPageProps) {
+export default function ProductCategory({
+  auth,
+  categories: initialCategories,
+  filters,
+}: ProductCategoryProps) {
     const [showModal, setShowModal] = useState(false);
     const [showCreateModal, setShowFormModal] = useState(false);
     const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -49,7 +57,7 @@ export default function ProductCategory({ categories: initialCategories, filters
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/categories?search=${debouncedSearch}&sort_by=${filters.sort_by}&sort_direction=${filters.sort_direction}`)
+        fetch(`/api/categories?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
         .then((res) => res.json())
         .then((data) => setCategories(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
@@ -129,8 +137,7 @@ export default function ProductCategory({ categories: initialCategories, filters
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+    <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <div className="flex justify-between items-center">
@@ -281,9 +288,11 @@ export default function ProductCategory({ categories: initialCategories, filters
                             last_page={categories.last_page}
                             links={categories.links}
                             onPageChange={(url) => {
-                                fetch(url)
-                                .then(res => res.json())
-                                .then(data => setCategories(data));
+                                const apiUrl = url.replace("/product-categories", "/api/categories");
+
+                                fetch(apiUrl)
+                                    .then((res) => res.json())
+                                    .then((data) => setCategories(data));
                             }}
                         />
                     </div>
@@ -297,6 +306,6 @@ export default function ProductCategory({ categories: initialCategories, filters
                 />
             </div>
         </main>
-    </div>
+    </AuthenticatedLayout>
   );
 }

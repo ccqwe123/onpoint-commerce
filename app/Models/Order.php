@@ -9,7 +9,7 @@ class Order extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['plan_id', 'subtotal', 'payment', 'client_id'];
+    protected $fillable = ['plan_id', 'subtotal', 'payment', 'client_id', 'user_id'];
 
     public function items()
     {
@@ -24,5 +24,10 @@ class Order extends Model
     public function plan()
     {
         return $this->belongsTo(Plan::class);
+    }
+    
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
