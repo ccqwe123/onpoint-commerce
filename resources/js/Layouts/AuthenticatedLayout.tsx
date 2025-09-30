@@ -10,7 +10,7 @@ interface AuthenticatedLayoutProps {
 export default function AuthenticatedLayout({ children, user  }: AuthenticatedLayoutProps) {
   return (
     <div className="relative min-h-screen bg-white">
-      <Header user={user} />
+      <Header />
       <main>{children}</main>
     </div>
   );
