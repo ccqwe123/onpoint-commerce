@@ -6,8 +6,9 @@ import axios from "axios";
 import { Product } from "@/types/Product";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types"; 
 
-function ShoppingCart() {
+function ShoppingCart({ auth }: PageProps) {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [cartItems, setCartItems] = useState<(Product & { quantity: number })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -97,7 +98,7 @@ function ShoppingCart() {
   };
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout user={auth.user}>
       <motion.div
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}

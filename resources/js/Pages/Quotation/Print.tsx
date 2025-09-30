@@ -86,8 +86,8 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
         <div>
           <h1 className="text-2xl font-bold text-onpoint-btnblue">Quotation</h1>
           <div className="flex flex-col gap-1.5">
-            <p className="mt-2 text-[#BCBCBC]">Quotation # <span className="font-bold text-sm pl-7 text-black">&#09;&#09;{String(order.id).padStart(4, "0")}</span></p>
-            <p className="text-[#BCBCBC]">Quotation Date: <span className="font-bold text-sm text-black">&nbsp;
+            <p className="mt-2 text-gray-800">Quotation # <span className="font-bold text-sm pl-7 text-black">&#09;&#09;{String(order.id).padStart(4, "0")}</span></p>
+            <p className="text-gray-800">Quotation Date: <span className="font-bold text-sm text-black">&nbsp;
               {new Date(order.created_at).toLocaleDateString("en-US", {
                 year: "numeric",
                 month: "short",
@@ -104,7 +104,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
         <div className="bg-gray-100 p-4 rounded-md">
           <h3 className="text-onpoint-btnblue font-semibold text-sm">Quotation by</h3>
           <p className="font-bold mt-1 text-sm capitalize">{order.user?.name}</p>
-          <p className="text-[#BCBCBC] text-sm capitalize">{order.user?.position}</p>
+          <p className="text-gray-800 text-sm capitalize">{order.user?.position}</p>
         </div>
         <div className="bg-gray-100 p-4 rounded-md text-sm">
           <h3 className="text-onpoint-btnblue font-semibold">Quotation to</h3>
@@ -167,7 +167,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
             </span>
           </div>
           <div className="flex justify-between py-0 text-xs">
-            <span className="text-[#BCBCBC] py-1">
+            <span className="text-gray-800 pb-2">
               Due for{" "}
               {order.payment === "one-time"
                 ? "One Time"
@@ -179,7 +179,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
                 ? "24 Months"
                 : ""}
             </span>
-            <span className="text-[#BCBCBC]">
+            <span className="text-gray-800">
               ({monthly.toLocaleString("en-PH", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
@@ -197,36 +197,36 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
             </span>
           </div>
           <div className="flex flex-col py-2 border-b">
-            <span className="text-[#BCBCBC] text-[10px]">Quotation Total in words</span>
-            <span className="text-[#BCBCBC]">
+            <span className="text-gray-800 text-[10px]">Quotation Total in words</span>
+            <span className="text-black capitalize">
               {convertAmountToWords(total)} only
             </span>
           </div>
         </div>
       </div>
-      <div className="space-y-4 w-1/2">
+      <div className="absolute bottom-32 space-y-4 w-[40%]">
         <div>
           <h3 className="font-semibold text-onpoint-btnblue text-xs">Terms and Conditions</h3>
-          <ol className="list-decimal ml-5 text-gray-800 text-[10px]">
-            <li>This quotation is valid for 30 days from the date of issuance, unless otherwise stated.</li>
-            <li>Prices and availability of devices may change without prior notice if the quotation has expired.</li>
+          <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
+            <li className="leading-none">This quotation is valid for 30 days from the date of issuance, unless otherwise stated.</li>
+            <li className="leading-none">Prices and availability of devices may change without prior notice if the quotation has expired.</li>
           </ol>
         </div>
 
         <div>
           <h3 className="font-semibold text-onpoint-btnblue text-xs">Validity of Quotation</h3>
-          <ol className="list-decimal ml-5 text-gray-800 text-[10px]">
-            <li>All prices are quoted in Pesos, exclusive of taxes, duties, shipping, and installation fees unless otherwise specified.</li>
-            <li>Discounts, if applicable, are reflected in the quotation.</li>
+          <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
+            <li className="leading-none">All prices are quoted in Pesos, exclusive of taxes, duties, shipping, and installation fees unless otherwise specified.</li>
+            <li className="leading-none">Discounts, if applicable, are reflected in the quotation.</li>
           </ol>
         </div>
 
         <div>
           <h3 className="font-semibold text-onpoint-btnblue text-xs">Additional Notes</h3>
-          <ol className="list-decimal ml-5 text-gray-800 text-[10px]">
-            <li>Lead times may vary depending on stock availability at the time of order.</li>
-            <li>Prices are subject to change without prior notice if the quotation has expired.</li>
-            <li>Any customization, add-ons, or special requests not stated in this quotation will be subject to a separate cost.</li>
+          <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
+            <li className="leading-none">Lead times may vary depending on stock availability at the time of order.</li>
+            <li className="leading-none">Prices are subject to change without prior notice if the quotation has expired.</li>
+            <li className="leading-none">Any customization, add-ons, or special requests not stated in this quotation will be subject to a separate cost.</li>
           </ol>
         </div>
       </div>

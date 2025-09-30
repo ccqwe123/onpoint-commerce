@@ -24,6 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::get('/categories', [JsonController::class, 'fetchCategories']);
 Route::get('/products/{id}', [JsonController::class, 'fetchProducts']);
 Route::get('/quotations', [JsonController::class, 'fetchQuotations']);
+Route::get('/users', [JsonController::class, 'fetchUsers']);
 
 Route::get('/categories-products', [ProductController::class, 'index']);
 Route::get('/categories/{id}/products', [ProductController::class, 'getByCategory']);

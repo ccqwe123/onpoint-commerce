@@ -8,6 +8,7 @@ import Sidebar from "@/Components/Sidebar";
 import { SidebarProvider } from "@/context/SidebarContext";
 import SwipeDetector from "@/Components/SwipeDetector";
 import { ToastProvider } from "@/Components/ToastProvider";
+import { PageProps } from "@/types";
 // const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'Laravel';
 
 // createInertiaApp({
@@ -41,7 +42,7 @@ createInertiaApp({
   },
   setup({ el, App, props }) {
     const root = createRoot(el);
-
+    const auth = (props.initialPage.props as any).auth;
     root.render(
       <AnimatePresence mode="wait">
         <motion.div
@@ -54,7 +55,7 @@ createInertiaApp({
         >
           <SidebarProvider>
             <App {...props} />
-            <Sidebar />
+            <Sidebar auth={auth} currentUrl={window.location.pathname} />
             <SwipeDetector />
             <ToastProvider />
           </SidebarProvider>

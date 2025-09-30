@@ -73,7 +73,7 @@ export default function Home({ auth, order }: ViewProps) {
                         <Link href="/quotation" className="flex items-center text-gray-500 hover:text-gray-700">
                             <ChevronLeft size={28} className="mr-1" />
                         </Link>
-                        <span className="cursor-default select-none">Quotation No. {order?.id}</span>
+                        <span className="cursor-default select-none">Quotation No. {String(order.id).padStart(4, "0")}</span>
                     </div>
                     <button
                       onClick={startPrint}

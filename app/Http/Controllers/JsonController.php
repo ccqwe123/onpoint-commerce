@@ -7,6 +7,7 @@ use App\Models\Category;
 use App\Models\Product;
 use App\Models\Order;
 use App\Models\Plan;
+use App\Models\User;
 
 class JsonController extends Controller
 {
@@ -101,6 +102,27 @@ class JsonController extends Controller
                 $query->orderBy('id', $sortDirection);
                 break;
         }
+
+        return $query->paginate(10)->appends($request->all());
+    }
+
+    public function fetchUsers(Request $request)
+    {
+        $query = User::query();
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('id', 'like', "%{$search}%")
+                    ->orWhere('name', 'like', "%{$search}%")
+                    ->orWhere('position', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
+            });
+        }
+
+        $sortBy = $request->get('sort_by', 'id');
+        $sortDirection = $request->get('sort_direction', 'desc');
 
         return $query->paginate(10)->appends($request->all());
     }

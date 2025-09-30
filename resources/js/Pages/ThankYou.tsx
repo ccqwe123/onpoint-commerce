@@ -4,10 +4,11 @@ import { Link } from "@inertiajs/react";
 import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types"; 
 
-export default function Home() {
+export default function Home({ auth }: PageProps) {
   return (
-      <AuthenticatedLayout>
+      <AuthenticatedLayout user={auth.user}>
       <motion.div className="flex-1 flex items-center justify-center px-4 py-12 !min-h-[90vh]"
           initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}

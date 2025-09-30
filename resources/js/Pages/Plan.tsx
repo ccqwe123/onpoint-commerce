@@ -6,8 +6,10 @@ import { Link } from "@inertiajs/react";
 import { PlanData } from "@/types/Plan";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
-const Plans = () => {
+type PlanProps = PageProps;
+const Plans = ({auth}: PlanProps) => {
   const [plans, setPlans] = useState<PlanData[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<number | null>(null);
 
@@ -25,7 +27,7 @@ const Plans = () => {
   }, []);
 
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout user={auth.user}>
       <motion.div className="flex-1 p-16"
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}

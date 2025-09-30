@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PlanController;
 use App\Http\Controllers\ProductController;
+use App\Http\Controllers\UserController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
@@ -79,6 +80,11 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/quotation', [ProductController::class, 'quotation'])->name('quotation.index');
     Route::get('/quotation/{id}/view', [ProductController::class, 'quotationView'])->name('quotation.view');
+
+    Route::middleware(['auth', 'role:admin'])->group(function () {
+        Route::get('/users', [UserController::class, 'index']);
+        Route::post('/users/create', [UserController::class, 'store']);
+    });
 });
 
 require __DIR__.'/auth.php';

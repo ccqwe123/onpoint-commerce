@@ -63,7 +63,8 @@ class DatabaseSeeder extends Seeder
             'name' => 'Mr. Pogi',
             'email' => 'onpoint@admin.com',
             'password' => Hash::make('admin'),
-            'position' => 'Business Developement Manager'
+            'position' => 'Business Developement Manager',
+            'user_type' => 'admin'
         ]);
         // \App\Models\User::factory(10)->create();
 

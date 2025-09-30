@@ -5,12 +5,14 @@ import axios from "axios";
 import { Product } from "@/types/Product";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
 
 interface PaymentTermsProps {
   onContinue: () => void;
 }
+type PlanProps = PageProps & PaymentTermsProps;
 
-const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
+const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
   const [cart, setCart] = useState<Record<number, number>>({});
   const [payment, setPayment] = useState(0);
   const [selectedPayment, setSelectedPayment] = useState<'one-time' | '6-months' | '12-months' | '24-months'>('one-time');
@@ -142,7 +144,7 @@ const PaymentTerms: React.FC<PaymentTermsProps> = ({ onContinue }) => {
     setSelectedItem(null);
   };
   return (
-    <AuthenticatedLayout>
+    <AuthenticatedLayout user={auth.user}>
       <motion.div  className="max-w-[1480px] mx-auto px-4 py-8"
         initial={{ opacity: 0, scale: 0.98 }}
         animate={{ opacity: 1, scale: 1 }}

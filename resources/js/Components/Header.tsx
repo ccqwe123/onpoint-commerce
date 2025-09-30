@@ -6,10 +6,10 @@ interface HeaderProps {
   user: User;
 }
 
-const Header = ({ user }: HeaderProps) => {
+const Header = () => {
   const { openSidebar } = useSidebar();
   return (
-    <header className="sticky top-0 z-50 w-full bg-white border-b border-gray-100">
+    <header className="sticky top-0 z-30 w-full bg-white border-b border-gray-100">
       <div className="max-w-[1480px] mx-auto px-4 py-4 flex items-center justify-between">
         <Link href="/" 
           onClick={() => {

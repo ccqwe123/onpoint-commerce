@@ -10,13 +10,13 @@ export default defineConfig({
         }),
         react(),
     ],
-    // server: {
-    //     host: true,
-    //     port: 5173,
-    //     strictPort: true,
-    //     cors: true,
-    //     hmr: {
-    //     host: "192.168.0.156",
-    //     },
-    // },
+    server: {
+        host: true,
+        port: 5173,
+        strictPort: true,
+        cors: true,
+        hmr: {
+        host: "192.168.0.157",
+        },
+    },
 });

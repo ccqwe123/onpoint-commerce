@@ -2,16 +2,21 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useState } from 'react';
 import { useSidebar } from "@/context/SidebarContext";
-import { Home, ShoppingCart, Settings, LogOut } from "lucide-react";
+import { Home, ShoppingCart, Settings, LogOut, Users } from "lucide-react";
 import { usePage, Link } from '@inertiajs/react';
+import { User } from "@/types";
 import axios from "axios";
 
-interface SidebarProps { currentUrl: string }
-
-const Sidebar = () => {
+interface SidebarProps {
+  currentUrl: string;
+  auth: {
+    user: User;
+  };
+}
+const Sidebar = ({ auth }: SidebarProps) => {
   const { isOpen, closeSidebar } = useSidebar();
   const [currentUrl, setCurrentUrl] = useState(window.location.pathname);
-
+  const user = auth.user;
   useEffect(() => {
     const onNavigate = (event: any) => {
       setCurrentUrl(event.detail.page.url); // updates URL reactively
@@ -103,6 +108,18 @@ const Sidebar = () => {
                 <Settings size={20} />
                 <span className="font-medium">Quotation</span>
               </Link>
+              { user.user_type === 'admin' && (
+                <Link
+                  onClick={closeSidebar}
+                  href="/users"
+                  className={`flex items-center gap-3 p-3 rounded-xl transition ${
+                    isActive("/users") ? "bg-onpoint-btnblue text-white" : ""
+                  }`}
+                >
+                  <Users size={20} />
+                  <span className="font-medium">Users</span>
+                </Link>
+              )}
             </nav>
 
             {/* Logout */}
