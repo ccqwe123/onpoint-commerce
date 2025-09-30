@@ -10,13 +10,13 @@ export default defineConfig({
         }),
         react(),
     ],
-    server: {
-        host: true,      // allow external devices
-        port: 5173,
-        strictPort: true,
-        cors: true,
-        hmr: {
-        host: "192.168.0.156", // 🔥 your computer's LAN IP
-        },
-    },
+    // server: {
+    //     host: true,
+    //     port: 5173,
+    //     strictPort: true,
+    //     cors: true,
+    //     hmr: {
+    //     host: "192.168.0.156",
+    //     },
+    // },
 });
