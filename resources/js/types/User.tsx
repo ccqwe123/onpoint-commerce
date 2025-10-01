@@ -5,4 +5,6 @@ export interface User {
     position: string | null;
     user_type: "" | "admin" | "manager" | "staff";
     is_active: boolean;
+    password: string;
+    password_confirmation: string;
 }

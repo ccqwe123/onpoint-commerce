@@ -8,7 +8,7 @@ import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown } from 'lucide-react';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/Components/ui/select';
+import Status from "@/Components/Modals/Status";
 import { PageProps } from "@/types";
 
 interface OrderProps {
@@ -23,7 +23,7 @@ type Props = PageProps & OrderProps;
 
 export default function Home({ auth, users: innitialOrders, filters }: Props) {
     const [search, setSearch] = useState(filters.search || "");
-    const [showFormModal, setShowFormModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
     const [debouncedSearch, setDebouncedSearch] = useState(search);
     const [users, setUsers] = useState<Paginated<User>>(innitialOrders);
     const [editingUser, setEditingUser] = useState<User | null>(null);
@@ -33,6 +33,8 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
         email: "",
         position: "",
         user_type: "",
+        password: "",
+        password_confirmation: "",
         is_active: true,
     });
 
@@ -56,47 +58,32 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
         .then((data) => setUsers(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
 
-    const handleCreate = () => {
-        setEditingUser(null);
-        reset();
-        setShowFormModal(true);
+    const togglePlan = (user: User) => {
+        setEditingUser(user);
+        setShowModal(true);
     };
+    const confirmToggle = () => {
+       if (!editingUser) return;
 
-    const submit = (e: React.FormEvent) => {
-        e.preventDefault();
-
-        const payload = {
-            name: data.name,
-            email: data.email,
-            position: data.position,
-            user_type: data.user_type,
-            is_active: data.is_active ? 1 : 0,
-        };
-
-        if (editingUser) {
-            put(`/users/${editingUser.id}/update`, {
-            data: payload,
-            onSuccess: () => {
-                (window as any).showToast("Category updated", "success");
-                setShowFormModal(false);
-            },
-            onError: () => {
-                (window as any).showToast("Failed to update", "error");
-            },
-            });
-        } else {
-            post(`/users/create`, {
-            data: payload,
-            onSuccess: () => {
-                (window as any).showToast("Category created", "success");
-                setShowFormModal(false);
-                reset();
-            },
-            onError: () => {
-                (window as any).showToast("Failed to create", "error");
-            },
-            });
-        }
+        put(`/users/${editingUser.id}/toggle`, {
+        data: { is_active: !editingUser.is_active },
+        onSuccess: () => {
+            setShowModal(false);
+            setUsers((prev) => ({
+                ...prev,
+                data: prev.data.map((p) =>
+                p.id === editingUser.id ? { ...p, is_active: !editingUser.is_active } : p
+                ),
+            }));
+            (window as any).showToast("User Status updated successfully ✅", "success");
+        },
+        onError: () => {
+            (window as any).showToast("Failed to update plan ❌", "error");
+        },
+        onFinish: () => {
+            setShowModal(false);
+        },
+        });
     };
   return (
     <AuthenticatedLayout user={auth.user}>
@@ -116,97 +103,9 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                                 <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2.5 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Search..." />
                             </div>
                         </div>
-                        <button onClick={() => handleCreate()} className="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
+                        <Link href="/users/create" className="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
                             Create User
-                        </button>
-                        <AnimatePresence>
-                        {showFormModal && (
-                            <motion.div
-                                key="backdrop"
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
-                            >
-                                <motion.div
-                                    initial={{ scale: 0.95, opacity: 0 }}
-                                    animate={{ scale: 1, opacity: 1 }}
-                                    exit={{ scale: 0.95, opacity: 0 }}
-                                    className="bg-white rounded-xl p-6 w-[400px] shadow-lg"
-                                >
-                                    <h2 className="text-xl font-semibold mb-4">
-                                        {editingUser ? "Edit User" : "Create User"}
-                                    </h2>
-
-                                    <form onSubmit={submit} className="space-y-4">
-                                        <div>
-                                            <label className="block text-sm font-medium">Name</label>
-                                            <input
-                                                type="text"
-                                                value={data.name}
-                                                onChange={(e) => setData("name", e.target.value)}
-                                                className="w-full border rounded-lg px-3 py-2"
-                                            />
-                                            {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium">Email</label>
-                                            <input
-                                                type="email"
-                                                value={data.email}
-                                                onChange={(e) => setData("name", e.target.value)}
-                                                className="w-full border rounded-lg px-3 py-2"
-                                            />
-                                            {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium">Position</label>
-                                            <input
-                                                type="text"
-                                                value={data.position || ""}
-                                                onChange={(e) => setData("name", e.target.value)}
-                                                className="w-full border rounded-lg px-3 py-2"
-                                            />
-                                            {errors.position && <p className="text-red-500 text-sm">{errors.position}</p>}
-                                        </div>
-                                        <div>
-                                            <label className="block text-sm font-medium">User Type</label>
-                                            <Select value={data.user_type}  onValueChange={(val: "admin" | "manager" | "staff") => setData("user_type", val)} >
-                                                <SelectTrigger>
-                                                    <SelectValue placeholder="Select User Type" />
-                                                </SelectTrigger>
-                                                <SelectContent className="bg-white">
-                                                    <SelectItem value="admin">Admin</SelectItem>
-                                                    <SelectItem value="manager">Manager</SelectItem>
-                                                    <SelectItem value="staff">Staff</SelectItem>
-                                                </SelectContent>
-                                            </Select>
-                                            {errors.position && <p className="text-red-500 text-sm">{errors.position}</p>}
-                                        </div>
-
-                                        <div className="flex items-center gap-2">
-                                        <input
-                                            id="is_active"
-                                            type="checkbox"
-                                            checked={data.is_active}
-                                            onChange={(e) => setData("is_active", e.target.checked)}
-                                        />
-                                        <label htmlFor="is_active">Active</label>
-                                        </div>
-
-                                        <div className="flex justify-end gap-3">
-                                        <button type="button" onClick={() => setShowFormModal(false)} className="px-4 py-2 rounded-lg border">
-                                            Cancel
-                                        </button>
-                                        <button type="submit" className="px-4 py-2 rounded-lg bg-onpoint-btnblue text-white" disabled={processing}>
-                                            {editingUser ? "Update" : "Create"}
-                                        </button>
-                                        </div>
-                                    </form>
-                                </motion.div>
-                            </motion.div>
-                            )}
-                        </AnimatePresence>
+                        </Link>
                     </div>
                 </div>
                 <Card className="relative overflow-x-auto">
@@ -228,10 +127,22 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                             <th className="px-6 py-3">
                                 <Link href={`/users`} data={{
                                 ...filters,
-                                sort_by: "username",
-                                sort_direction: nextSortDirection("username"),
+                                sort_by: "email",
+                                sort_direction: nextSortDirection("email"),
                             }} preserveState replace>
-                                <span className="inline-flex items-center"> Email Address {filters.sort_by === "username" && (filters.sort_direction === "asc" ? (
+                                <span className="inline-flex items-center"> Email Address {filters.sort_by === "email" && (filters.sort_direction === "asc" ? (
+                                    <ArrowUp className="ml-1 w-3 h-3" /> ) : (
+                                    <ArrowDown className="ml-1 w-3 h-3" /> ))}
+                                </span>
+                                </Link>
+                            </th>
+                            <th className="px-6 py-3">
+                                <Link href={`/users`} data={{
+                                ...filters,
+                                sort_by: "user_type",
+                                sort_direction: nextSortDirection("user_type"),
+                            }} preserveState replace>
+                                <span className="inline-flex items-center"> Type {filters.sort_by === "user_type" && (filters.sort_direction === "asc" ? (
                                     <ArrowUp className="ml-1 w-3 h-3" /> ) : (
                                     <ArrowDown className="ml-1 w-3 h-3" /> ))}
                                 </span>
@@ -264,9 +175,10 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                             <th className="px-6 py-3"></th>
                         </tr>
                         </thead>
-                        <tbody> {users?.data?.map((user) => ( <tr key={user.id} className="odd:bg-[#fafafa] even:bg-white">
+                        <tbody> {users?.data?.map((user) => ( <tr key={user.id} className="even:bg-[#fafafa] odd:bg-white">
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{user?.name}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{user.email ?? '-'}</td>
+                            <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200 capitalize">{user.user_type}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200 capitalize">{user.position}</td>
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">
                                 <div className="flex items-center space-x-2">
@@ -280,6 +192,11 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                                 </div>
                             </td>
                             <td className="px-6 py-4 border-b border-gray-200">
+                                <Link href={`/users/${user.id}/edit`} className="text-black bg-white hover:bg-green-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </Link>
+                                {user.is_active ? ( 
+                                    <button onClick={() => togglePlan(user)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
+                                    <button onClick={() => togglePlan(user)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
+                                )}
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -300,9 +217,15 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                                 }}
                             />
                             )}
-
                     </div>
                 </Card>
+                <Status
+                    show={showModal}
+                    onClose={() => setShowModal(false)}
+                    onConfirm={confirmToggle}
+                    isActive={editingUser?.is_active ?? false}
+                    type="User"
+                />
             </div>
         </main>
     </AuthenticatedLayout>

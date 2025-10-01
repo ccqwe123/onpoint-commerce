@@ -82,8 +82,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/quotation/{id}/view', [ProductController::class, 'quotationView'])->name('quotation.view');
 
     Route::middleware(['auth', 'role:admin'])->group(function () {
-        Route::get('/users', [UserController::class, 'index']);
-        Route::post('/users/create', [UserController::class, 'store']);
+        Route::get('/users', [UserController::class, 'index'])->name('users.index');
+        Route::get('/users/create', [UserController::class, 'create']);
+        Route::post('/users/store', [UserController::class, 'store']);
+        Route::put('/users/{id}/toggle', [UserController::class, 'toggle']);
+        Route::get('/users/{id}/edit', [UserController::class, 'edit']);
+        Route::put('/users/{id}/update', [UserController::class, 'update']);
     });
 });
 

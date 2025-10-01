@@ -117,12 +117,15 @@ class JsonController extends Controller
                 $q->where('id', 'like', "%{$search}%")
                     ->orWhere('name', 'like', "%{$search}%")
                     ->orWhere('position', 'like', "%{$search}%")
-                    ->orWhere('email', 'like', "%{$search}%");
+                    ->orWhere('email', 'like', "%{$search}%")
+                    ->orWhere('user_type', 'like', "%{$search}%");
             });
         }
 
         $sortBy = $request->get('sort_by', 'id');
         $sortDirection = $request->get('sort_direction', 'desc');
+
+        $query->orderBy($sortBy, $sortDirection);
 
         return $query->paginate(10)->appends($request->all());
     }
