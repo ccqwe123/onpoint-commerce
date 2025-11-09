@@ -17,9 +17,11 @@ class ProductController extends Controller
         // $categories = Category::with(['products.images'])
         //     ->where('is_active', 1)
         //     ->get();
-        $categories = Category::with(['products' => function ($q) {
+        $categories = Category::with([
+            'products' => function ($q) {
                 $q->where('is_active', 1)->with('images');
-            }])
+            }
+        ])
             ->whereHas('products', function ($q) {
                 $q->where('is_active', 1);
             })
@@ -54,7 +56,7 @@ class ProductController extends Controller
         return response()->json($products);
     }
 
-    public function categoryList(Request $request) 
+    public function categoryList(Request $request)
     {
         $query = Category::query()->with('products');
 
@@ -76,7 +78,7 @@ class ProductController extends Controller
         ]);
     }
 
-    public function categoryCreate() 
+    public function categoryCreate()
     {
         return Inertia::render('ProductCategory/Create');
     }
@@ -128,7 +130,7 @@ class ProductController extends Controller
 
     public function productList(Request $request, $id)
     {
-        $query = Product::with(['images'])->where('category_id',$id);
+        $query = Product::with(['images'])->where('category_id', $id);
         $category = Category::findOrFail($id);
 
         $sortBy = $request->get('sort_by', 'id');
@@ -194,7 +196,7 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->route('product-categories.product.index',['id'=>$validated['category_id']])->with('success', 'Product created successfully.');
+        return redirect()->route('product-categories.product.index', ['id' => $validated['category_id']])->with('success', 'Product created successfully.');
     }
 
     public function productEdit($category_id, $product_id)
@@ -213,7 +215,7 @@ class ProductController extends Controller
         $cleanDescription = trim(strip_tags($request->input('description', '')));
 
         if ($cleanDescription === '' || $cleanDescription === '&nbsp;') {
-            $request->merge(['description' => null]); 
+            $request->merge(['description' => null]);
         }
         $validated = $request->validate([
             'name' => 'required|string|max:255',
@@ -228,7 +230,7 @@ class ProductController extends Controller
 
         $product = Product::findOrFail($id);
 
-         $product->update([
+        $product->update([
             'name' => $request->name,
             'description' => $request->description,
             'price' => $request->price,
@@ -239,7 +241,7 @@ class ProductController extends Controller
         $images = $request->input('images', []);
         $existingImages = array_filter($images, fn($img) => is_numeric($img));
         $newFiles = $request->file('images') ?? [];
-        if($images && $existingImages){
+        if ($images && $existingImages) {
             $product->images()->whereNotIn('id', $existingImages)->delete();
         }
 
@@ -260,14 +262,14 @@ class ProductController extends Controller
                 $image->save();
             }
         }
-        
-        return redirect()->route('product-categories.product.index',['id'=>$product->category_id])->with('success', 'Product updated successfully.');
+
+        return redirect()->route('product-categories.product.index', ['id' => $product->category_id])->with('success', 'Product updated successfully.');
     }
 
     public function quotation(Request $request)
     {
         $sortBy = $request->get('sort_by', 'orders.id');
-        $sortDirection = $request->get('sort_direction', 'asc');
+        $sortDirection = $request->get('sort_direction', 'desc');
 
         $query = Order::with(['items', 'plan', 'client'])
             ->select('orders.*')
@@ -313,7 +315,7 @@ class ProductController extends Controller
 
     public function quotationView($id)
     {
-        $order = Order::with(['items.product.category', 'plan.descriptions','user','client'])->where('id', $id)->firstOrFail();
+        $order = Order::with(['items.product.category', 'plan.descriptions', 'user', 'client'])->where('id', $id)->firstOrFail();
 
         return Inertia::render('Quotation/View', [
             'order' => $order,

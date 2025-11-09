@@ -9,14 +9,12 @@ import axios from "axios";
 
 interface SidebarProps {
   currentUrl: string;
-  auth: {
-    user: User;
-  };
+  user: User;
 }
-const Sidebar = ({ auth }: SidebarProps) => {
+
+const Sidebar = ({ user }: SidebarProps) => {
   const { isOpen, closeSidebar } = useSidebar();
   const [currentUrl, setCurrentUrl] = useState(window.location.pathname);
-  const user = auth.user;
   useEffect(() => {
     const onNavigate = (event: any) => {
       setCurrentUrl(event.detail.page.url); // updates URL reactively
@@ -108,7 +106,7 @@ const Sidebar = ({ auth }: SidebarProps) => {
                 <Settings size={20} />
                 <span className="font-medium">Quotation</span>
               </Link>
-              { user.user_type === 'admin' && (
+              { user?.user_type === 'admin' && (
                 <Link
                   onClick={closeSidebar}
                   href="/users"

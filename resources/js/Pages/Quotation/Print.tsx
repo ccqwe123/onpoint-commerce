@@ -1,6 +1,7 @@
 // Print.tsx
 import React from "react";
 import { Order } from "@/types/Plan";
+import { Head } from '@inertiajs/react';
 
 export type PrintProps = {
   order: Order;
@@ -26,7 +27,6 @@ function getPaymentMonths(payment: string | null | undefined): number {
     default: return 1;
   }
 }
-
 function getMonthlyPayment(payment: string | null | undefined, plan: number | string | null | undefined, subt: number | string | null | undefined): number {
   const months = getPaymentMonths(payment);
   const planPrice = typeof plan === "string" ? parseFloat(plan) || 0 : (plan ?? 0);
@@ -39,6 +39,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
   const subtotal = typeof order.subtotal === "string" ? parseFloat(order.subtotal) || 0 : (order.subtotal ?? 0);
   const monthly = getMonthlyPayment(order.payment ?? null, order.plan?.price ?? 0, subtotal);
   const total = subtotal + monthly;
+  const plantType = getPaymentMonths(order.payment ?? null);
   
   function numberToWords(num: number): string {
     if (num === 0) return "zero";
@@ -80,11 +81,21 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
     }
     return words;
   }
+
+  const formatPrice = (price: number) => {
+    return `₱${price.toLocaleString("en-PH", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}`;
+  };
+
   return (
-    <div ref={ref} className="p-10 font-sans text-gray-900 text-sm w-[800px] mx-auto">
+    <>
+    <Head title="OnPoint | View Quotation" />
+    <div ref={ref} className="p-10 font-sans text-gray-900 text-sm w-[800px] mx-auto" style={{ width: "210mm", height: "297mm" }}>
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold text-onpoint-btnblue">Quotation</h1>
+          <h1 className="text-2xl font-bold" style={{ color: "#0026AB" }}>Quotation</h1>
           <div className="flex flex-col gap-1.5">
             <p className="mt-2 text-gray-800">Quotation # <span className="font-bold text-sm pl-7 text-black">&#09;&#09;{String(order.id).padStart(4, "0")}</span></p>
             <p className="text-gray-800">Quotation Date: <span className="font-bold text-sm text-black">&nbsp;
@@ -102,12 +113,12 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
 
       <div className="grid grid-cols-2 gap-6 mt-6">
         <div className="bg-gray-100 p-4 rounded-md">
-          <h3 className="text-onpoint-btnblue font-semibold text-sm">Quotation by</h3>
+          <h3 className="font-semibold text-sm" style={{ color: "#0026AB" }}>Quotation by</h3>
           <p className="font-bold mt-1 text-sm capitalize">{order.user?.name}</p>
           <p className="text-gray-800 text-sm capitalize">{order.user?.position}</p>
         </div>
         <div className="bg-gray-100 p-4 rounded-md text-sm">
-          <h3 className="text-onpoint-btnblue font-semibold">Quotation to</h3>
+          <h3 className="font-semibold" style={{ color: "#0026AB" }}>Quotation to</h3>
           <p className="font-bold mt-1 text-sm capitalize">{order.client?.name}</p>
           <p className="text-gray-800 text-sm">Client</p>
         </div>
@@ -124,7 +135,8 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
       {/* Items Table */}
       <table className="w-full mt-6 border-collapse">
         <thead>
-          <tr className="bg-onpoint-btnblue rounded rounded-tl-xl text-white text-left">
+          <tr className="text-white text-left" style={{ backgroundColor: "#0026AB" }}>
+          {/* <tr className="bg-onpoint-btnblue rounded rounded-tl-xl text-white text-left"> */}
             <th className="px-3 py-2 text-xs w-[5%]">No.</th>
             <th className="px-3 py-2 text-xs w-[50%]">Item(s)</th>
             <th className="px-3 py-2 text-xs w-[5%] text-center">Qty</th>
@@ -139,7 +151,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
               <td className={`px-3 pb-[2px] text-xs`}>{item.product?.name}</td>
               <td className="px-3 pb-[2px] text-xs text-center">{item.quantity}</td>
               <td className="px-3 pb-[2px] text-xs text-right">₱{item.price.toLocaleString()}</td>
-              <td className="px-3 pb-[2px] text-xs text-right">₱{(item.price * item.quantity).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</td>
+              <td className="pl-3 pr-0 pb-[2px] text-xs text-right">₱{(item.price * item.quantity).toLocaleString("en-PH", { minimumFractionDigits: 2 })}</td>
             </tr>
           ))}
         </tbody>
@@ -180,17 +192,18 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
                 : ""}
             </span>
             <span className="text-gray-800">
-              ({monthly.toLocaleString("en-PH", {
+              {order.payment === 'one-time' ? formatPrice(subtotal) : formatPrice(subtotal/plantType) }
+              {/* ({monthly.toLocaleString("en-PH", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
-              })})
+              })}) */}
             </span>
           </div>
           <div className="flex justify-between py-2 border-t text-xl">
             <span className="text-black font-semibold">Total</span>
-            <span className="text-onpoint-btnblue font-semibold">
+            <span className="font-semibold" style={{ color: "#0026AB" }}>
               ₱
-              {total.toLocaleString("en-PH", {
+              {subtotal.toLocaleString("en-PH", {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
               })}
@@ -206,7 +219,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
       </div>
       <div className="absolute bottom-32 space-y-4 w-[40%]">
         <div>
-          <h3 className="font-semibold text-onpoint-btnblue text-xs">Terms and Conditions</h3>
+          <h3 className="font-semibold text-xs" style={{ color: "#0026AB" }}>Terms and Conditions</h3>
           <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
             <li className="leading-none">This quotation is valid for 30 days from the date of issuance, unless otherwise stated.</li>
             <li className="leading-none">Prices and availability of devices may change without prior notice if the quotation has expired.</li>
@@ -214,7 +227,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
         </div>
 
         <div>
-          <h3 className="font-semibold text-onpoint-btnblue text-xs">Validity of Quotation</h3>
+          <h3 className="font-semibold text-xs" style={{ color: "#0026AB" }}>Validity of Quotation</h3>
           <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
             <li className="leading-none">All prices are quoted in Pesos, exclusive of taxes, duties, shipping, and installation fees unless otherwise specified.</li>
             <li className="leading-none">Discounts, if applicable, are reflected in the quotation.</li>
@@ -222,7 +235,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
         </div>
 
         <div>
-          <h3 className="font-semibold text-onpoint-btnblue text-xs">Additional Notes</h3>
+          <h3 className="font-semibold text-xs" style={{ color: "#0026AB" }}>Additional Notes</h3>
           <ol className="list-decimal ml-5 text-gray-800 text-[10px] flex flex-col gap-y-2">
             <li className="leading-none">Lead times may vary depending on stock availability at the time of order.</li>
             <li className="leading-none">Prices are subject to change without prior notice if the quotation has expired.</li>
@@ -245,6 +258,7 @@ const Print = React.forwardRef<HTMLDivElement, PrintProps>(({ order }, ref) => {
         </p>
       </div>
     </div>
+    </>
   );
 });
 

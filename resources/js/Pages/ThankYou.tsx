@@ -5,14 +5,11 @@ import { Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types"; 
-import { Helmet } from "react-helmet";
-
+import { Head } from '@inertiajs/react';
 export default function Home({ auth }: PageProps) {
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Thank You</title>
-      </Helmet>
+    <Head title="OnPoint | Thank You" />
       <AuthenticatedLayout user={auth.user}>
       <motion.div className="flex-1 flex items-center justify-center px-4 py-12 !min-h-[90vh]"
           initial={{ opacity: 0, scale: 0.98 }}

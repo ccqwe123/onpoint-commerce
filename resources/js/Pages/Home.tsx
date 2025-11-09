@@ -1,23 +1,18 @@
 import Header from "@/Components/Header";
 import MainContent from "@/Components/MainContent";
 import Footer from "@/Components/Footer";
-import { Helmet } from "react-helmet";
+import { PageProps } from "@/types"; 
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { Head } from '@inertiajs/react';
 
-interface Props {
-  welcomeText: string;
-}
-
-export default function Home({ welcomeText }: Props) {
+export default function Home({ auth }: PageProps) {
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Sales</title>
-      </Helmet>
-      <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+    <Head title="OnPoint | Sales" />
+      <AuthenticatedLayout user={auth.user} className="flex flex-col relative">
         <MainContent />
         <Footer />
-      </div>
+      </AuthenticatedLayout>
     </>
   );
 }

@@ -21,20 +21,23 @@ use App\Http\Controllers\JsonController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-Route::get('/categories', [JsonController::class, 'fetchCategories']);
-Route::get('/products/{id}', [JsonController::class, 'fetchProducts']);
-Route::get('/quotations', [JsonController::class, 'fetchQuotations']);
-Route::get('/users', [JsonController::class, 'fetchUsers']);
+Route::middleware(['throttle:1000,1'])->group(function () {
+    Route::get('/categories', [JsonController::class, 'fetchCategories']);
+    Route::get('/products/{id}', [JsonController::class, 'fetchProducts']);
+    Route::get('/quotations', [JsonController::class, 'fetchQuotations']);
+    Route::get('/users', [JsonController::class, 'fetchUsers']);
 
-Route::get('/categories-products', [ProductController::class, 'index']);
-Route::get('/categories/{id}/products', [ProductController::class, 'getByCategory']);
-Route::get('/category/{id}/products', [ProductController::class, 'fetchProductsByCategory']);
-Route::post('/products/by-ids', [ProductController::class, 'getByIds']);
-Route::get('/plans', [PlanController::class, 'index']);
+    Route::get('/categories-products', [ProductController::class, 'index']);
+    Route::get('/categories/{id}/products', [ProductController::class, 'getByCategory']);
+    Route::get('/category/{id}/products', [ProductController::class, 'fetchProductsByCategory']);
+    Route::post('/products/by-ids', [ProductController::class, 'getByIds']);
+    Route::get('/plans', [PlanController::class, 'index']);
 
-Route::get('/plan/{id}', [PlanController::class, 'getPlan']);
-Route::post('/orders', [PlanController::class, 'order']);
-Route::get('/clients/search', [ClientController::class, 'search']);
+    Route::get('/plan/{id}', [PlanController::class, 'getPlan']);
+    Route::post('/orders', [PlanController::class, 'order']);
+    Route::get('/clients/search', [ClientController::class, 'search']);
 
-Route::get('/plans',[JsonController::class,'landingpagePlans']);
+    Route::get('/plans', [JsonController::class, 'landingpagePlans']);
+
+});
 

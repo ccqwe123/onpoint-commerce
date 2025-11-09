@@ -1,16 +1,14 @@
 import { useEffect, useState } from "react";
 import { Plus, Check, ShoppingBag, X } from "lucide-react";
 import { Link } from "@inertiajs/react";
-import { Button } from "@/Components/Button";
 import axios from "axios";
-import Header from "@/Components/Header";
 import ProductQuickView from "@/Components/ProductQuickView";
 import { Product, ProductView } from "@/types/Product";
 import CartSlideover from "@/Components/CartSlideover";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Helmet } from "react-helmet";
+import { Head } from '@inertiajs/react';
 
 interface Category {
   id: number;
@@ -77,22 +75,25 @@ const Products = ({auth}: ProductCategoryProps) => {
     0
   );
 
-  const handleImageError = (e: any) => {
-    e.target.src =
-      "https://images.unsplash.com/photo-1595341888016-a392ef81b7de";
-    e.target.alt = "Product placeholder image";
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.currentTarget;
+    if (target.src.includes("/images/no-image.jpeg")) return;
+    target.src = "/images/no-image.jpeg";
+    target.alt = "Product placeholder image";
   };
 
-  // Find products for selected category
+
   const currentCategory = categories.find(
     (c) => c.name === selectedCategory
   );
 
+  const truncate = (text: string, maxLength: number) => {
+    if (!text) return "";
+    return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+  };
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Devices</title>
-      </Helmet>
+      <Head title="OnPoint | Devices" />
       <AuthenticatedLayout user={auth.user}>
         <motion.div
             className="flex-1 p-16 pb-28"
@@ -111,7 +112,7 @@ const Products = ({auth}: ProductCategoryProps) => {
                     Choose your devices
                   </h1>
                 </div>
-                <div className="relative">
+                <div className="relative cursor-pointer">
                   <ShoppingBag
                     className="w-8 h-8 text-gray-600"
                     onClick={() => setOpenCart(true)}
@@ -179,7 +180,7 @@ const Products = ({auth}: ProductCategoryProps) => {
                               className="flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden"
                             >
                               <div
-                                className="w-full h-64 bg-gray-300 cursor-pointer"
+                                className="w-full h-64 bg-white cursor-pointer"
                                 onClick={() => {
                                   setSelectedProduct(product);
                                   setQuickViewOpen(true);
@@ -187,19 +188,20 @@ const Products = ({auth}: ProductCategoryProps) => {
                               >
                                 <img
                                   src={
-                                    product.images.find((img) => img.is_primary)
-                                      ?.image_path || product.images[0]?.image_path
+                                    product.images.find((img) => img.is_primary)?.image_path ||
+                                    product.images[0]?.image_path ||
+                                    "/images/no-image.jpeg"
                                   }
                                   alt={product.name}
                                   onError={handleImageError}
-                                  className="w-full h-full object-cover"
+                                  className="w-full h-full object-contain hover:scale-105 transition-transform duration-300"
                                 />
                               </div>
                               <div className="p-4 cursor-pointer">
                                 <div className="flex items-center justify-between">
                                   <div>
                                     <h3 className="font-medium text-gray-900 mb-1">
-                                      {product.name}
+                                      {truncate(product.name, 20)}
                                     </h3>
                                     <p className="text-gray-900 font-semibold">
                                       ₱{product.discount_price || product.price}

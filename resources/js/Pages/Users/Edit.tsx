@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useState, useEffect } from 'react';
 import Header from "@/Components/Header";
 import { User } from "@/types/User";
-import { ChevronLeft, Save } from 'lucide-react';
+import { ChevronLeft, Save, EyeOff, Eye } from 'lucide-react';
 import { Link } from "@inertiajs/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { RichTextEditor } from '@/Components/ui/rich-text-editor';
@@ -13,14 +13,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/Button';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface Props {
   user: User;
 }
-
-export default function CreateProduct({ user }: Props) {
+type UserEditProps = PageProps & Props;
+export default function CreateProduct({ user, auth }: UserEditProps) {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const { data, setData, put, processing, errors } = useForm<User>({
     id: user.id,
@@ -50,8 +55,9 @@ export default function CreateProduct({ user }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+        <>
+        <Head title="OnPoint | Edit User" />
+        <AuthenticatedLayout user={auth.user}>
          <form className="px-4 py-12">
             <div className=" bg-card">
                 <div className="container mx-auto px-6 py-4">
@@ -108,12 +114,50 @@ export default function CreateProduct({ user }: Props) {
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-base font-medium" htmlFor="password">Password</Label>
-                                        <Input type="password" id="password" value={data.password} onChange={e => setData("password", e.currentTarget.value)} placeholder="Password" />
+                                        <div className="relative">
+                                            <Input
+                                                id="password"
+                                                type={showPassword ? 'text' : 'password'}
+                                                placeholder="Password"
+                                                value={data.password}
+                                                 onChange={e => setData("password", e.currentTarget.value)}
+                                                className={`bg-background text-foreground border-input focus:border-blue-500 focus:ring-primary pr-12 ${
+                                                errors.password ? 'border-destructive' : ''
+                                                }`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowPassword(!showPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                aria-label={showPassword ? 'Hide password' : 'Show password'}
+                                            >
+                                                {showPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                         {errors.password && <p className="text-red-500 text-sm">{errors.password}</p>}
                                     </div>
                                     <div className="space-y-2">
                                         <Label className="text-base font-medium" htmlFor="confirmPassword">Confirm Password</Label>
-                                        <Input type="password" id="confirmPassword" value={data.password_confirmation} onChange={e => setData("password_confirmation", e.currentTarget.value)} placeholder="Confirm your password" />
+                                        <div className="relative">
+                                            <Input
+                                                id="confirmPassword"
+                                                type={showConfirmPassword ? 'text' : 'password'}
+                                                placeholder="Confirm your password"
+                                                value={data.password_confirmation}
+                                                    onChange={e => setData("password_confirmation", e.currentTarget.value)}
+                                                className={`bg-background text-foreground border-input focus:border-blue-500 focus:ring-primary pr-12 ${
+                                                errors.password ? 'border-destructive' : ''
+                                                }`}
+                                            />
+                                            <button
+                                                type="button"
+                                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                                                aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                                            >
+                                                {showConfirmPassword ? <Eye className="w-5 h-5" /> : <EyeOff className="w-5 h-5" />}
+                                            </button>
+                                        </div>
                                         {errors.password_confirmation && <p className="text-red-500 text-sm">{errors.password_confirmation}</p>}
                                     </div>
                                     <div className="flex items-center gap-2">
@@ -177,6 +221,7 @@ export default function CreateProduct({ user }: Props) {
                 )}
             </AnimatePresence>
         </form>
-    </div>
+        </AuthenticatedLayout>
+    </>
   );
 }

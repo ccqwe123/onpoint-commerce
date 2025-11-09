@@ -1,6 +1,6 @@
 // ProductQuickView.tsx
 import React, { useState, useEffect, useRef } from "react";
-import { X, CirclePlus, Check } from "lucide-react";
+import { X, CirclePlus, Check, ChevronLeft, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Product } from "@/types/Product";
 
@@ -15,6 +15,18 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
   const [currentImage, setCurrentImage] = useState(0);
   const [added, setAdded] = useState(false);
   const modalRef = useRef<HTMLDivElement | null>(null);
+   const [startIndex, setStartIndex] = useState(0);
+  const visibleCount = 4;
+  const totalImages = product.images?.length || 0;
+  const hasOverflow = totalImages > visibleCount;
+
+   const handlePrev = () => {
+    if (startIndex > 0) setStartIndex((prev) => prev - 1);
+  };
+
+  const handleNext = () => {
+    if (startIndex + visibleCount < totalImages) setStartIndex((prev) => prev + 1);
+  };
 
   // ESC key to close
   useEffect(() => {
@@ -30,18 +42,21 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
     const handleClickOutside = (e: MouseEvent) => {
       if (modalRef.current && !modalRef.current.contains(e.target as Node)) {
         onClose();
+        setCurrentImage(0);
+        setStartIndex(0);
       }
     };
     if (isOpen) document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [isOpen, onClose]);
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src = "https://images.unsplash.com/photo-1595341888016-a392ef81b7de";
-    e.currentTarget.alt = "Product placeholder image";
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.currentTarget;
+    if (target.src.includes("/images/no-image.jpeg")) return;
+    target.src = "/images/no-image.jpeg";
+    target.alt = "Product placeholder image";
   };
 
-  // Called when Add to Cart is clicked
   const handleAddToCart = () => {
     onAddToCart(product.id, 1);
     setAdded(true);
@@ -81,29 +96,56 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
               <div className="space-y-4">
                 <div className="relative aspect-square overflow-hidden rounded-lg bg-gray-100">
                   <img
-                    src={product.images?.[currentImage]?.image_path || ""}
+                    src={product.images?.[currentImage]?.image_path || "/images/no-image.jpeg"}
                     alt={product.name}
                     className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-300"
                     onError={handleImageError}
                     loading="lazy"
                   />
                 </div>
-                <div className="flex gap-2">
-                  {product.images?.map((image, index) => (
+                <div className="relative flex gap-2">
+                  {hasOverflow && startIndex > 0 && (
                     <button
-                      key={image.id ?? index}
-                      onClick={() => setCurrentImage(index)}
-                      className={`w-20 h-20 rounded-md overflow-hidden ${currentImage === index ? "ring-2 ring-blue-500" : ""}`}
+                      onClick={handlePrev}
+                      className="absolute left-0 top-8 z-10 bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow"
                     >
-                      <img
-                        src={image.image_path}
-                        alt={`${product.name} view ${index + 1}`}
-                        className="w-full h-full object-cover"
-                        onError={handleImageError}
-                        loading="lazy"
-                      />
+                      <ChevronLeft className="w-5 h-5 text-gray-600" />
                     </button>
-                  ))}
+                  )}
+                  <div className="overflow-hidden mx-6 flex-1">
+                    <motion.div className="flex gap-2"
+                      animate={{ x: -startIndex * 88 }}
+                      transition={{ duration: 0.35, ease: "easeInOut" }}
+                      style={{
+                        width: `${totalImages * 88}px`,
+                      }}
+                      >
+                      {product.images?.map((image, index) => (
+                        <button
+                          key={image.id ?? index}
+                          onClick={() => setCurrentImage(index)}
+                          className={`w-20 h-20 rounded-md m-[2px] overflow-hidden ${currentImage === index ? "ring-2 ring-blue-500" : ""}`}
+                        >
+                          <img
+                            src={image.image_path ? image.image_path : "/images/no-image.jpeg"}
+                            alt={`${product.name} view ${index + 1}`}
+                            className="w-full h-full object-cover"
+                            onError={handleImageError}
+                            loading="lazy"
+                          />
+                        </button>
+                      ))}
+                    </motion.div>
+                  </div>
+                  
+                  {hasOverflow && startIndex + visibleCount < totalImages && (
+                    <button
+                      onClick={handleNext}
+                      className="absolute right-0 top-8 z-10 bg-gray-100 hover:bg-gray-200 p-1 rounded-full shadow"
+                    >
+                      <ChevronRight className="w-5 h-5 text-gray-600" />
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -113,12 +155,12 @@ export default function ProductQuickView({ product, isOpen, onClose, onAddToCart
                   <div>
                     <h2 className="text-2xl font-bold text-gray-900">{product.name}</h2>
                     <div className="mt-2 flex items-center gap-2">
-                      <span className="text-3xl font-bold text-gray-900">₱{product.discount_price}</span>
-                      <span className="text-lg text-gray-500 line-through">₱{product.price}</span>
+                      <span className="text-3xl font-bold text-gray-900">₱{product.discount_price ? product.discount_price : product.price}</span>
+                      <span className="text-lg text-gray-500 line-through">{product.discount_price ? "₱"+product.price : ""}</span>
                     </div>
                   </div>
                   <p
-                    className="text-gray-600"
+                    className="text-gray-600 overflow-auto max-h-[330px] prose prose-sm prose-ul:list-disc prose-ol:list-decimal prose-li:ml-5"
                     dangerouslySetInnerHTML={{ __html: product.description ?? "" }}
                   ></p>
                 </div>

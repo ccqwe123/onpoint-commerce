@@ -55,7 +55,7 @@ createInertiaApp({
         >
           <SidebarProvider>
             <App {...props} />
-            <Sidebar auth={auth} currentUrl={window.location.pathname} />
+            {/* <Sidebar auth={auth} currentUrl={window.location.pathname} /> */}
             <SwipeDetector />
             <ToastProvider />
           </SidebarProvider>

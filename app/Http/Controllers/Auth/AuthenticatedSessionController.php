@@ -22,7 +22,7 @@ class AuthenticatedSessionController extends Controller
         if (auth()->check()) {
             return redirect()->intended('/');
         }
-        
+
         return Inertia::render('Auth/Login', [
             'canResetPassword' => Route::has('password.request'),
             'status' => session('status'),
@@ -37,6 +37,13 @@ class AuthenticatedSessionController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+
+        if (auth()->user()->is_active == false) {
+            Auth::logout();
+            return back()->withErrors([
+                'email' => 'Your account is inactive. Please contact support.',
+            ]);
+        }
 
         return redirect()->route('home');
     }

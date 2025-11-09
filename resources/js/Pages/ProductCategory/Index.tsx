@@ -1,5 +1,5 @@
 import Header from "@/Components/Header";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, PencilLine, ToggleLeft, ToggleRight, PackagePlus, Plus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Category } from "@/types/Product";
@@ -12,6 +12,7 @@ import { useForm } from "@inertiajs/react";
 import { Card } from '@/Components/ui/card';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface PlansPageProps {
   categories: Paginated<Category>;
@@ -56,10 +57,14 @@ export default function ProductCategory({
         return () => clearTimeout(handler);
     }, [search]);
 
+    const fetchCategories = () => {
+        fetch(`/api/categories?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "desc"}`)
+            .then((res) => res.json())
+            .then((data) => setCategories(data));
+    };
+
     useEffect(() => {
-        fetch(`/api/categories?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
-        .then((res) => res.json())
-        .then((data) => setCategories(data));
+        fetchCategories();
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
     
     const togglePlan = (category: Category) => {
@@ -115,6 +120,7 @@ export default function ProductCategory({
             onSuccess: () => {
                 (window as any).showToast("Category updated", "success");
                 setShowFormModal(false);
+                fetchCategories();
             },
             onError: () => {
                 (window as any).showToast("Failed to update", "error");
@@ -126,6 +132,7 @@ export default function ProductCategory({
             onSuccess: () => {
                 (window as any).showToast("Category created", "success");
                 setShowFormModal(false);
+                fetchCategories();
                 reset();
             },
             onError: () => {
@@ -133,10 +140,12 @@ export default function ProductCategory({
             },
             });
         }
-        };
+    };
 
 
   return (
+    <>
+    <Head title="OnPoint | Categories" />
     <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
@@ -156,10 +165,10 @@ export default function ProductCategory({
                                 <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Search..." />
                             </div>
                         </div>
-                        <button onClick={() => handleCreate()} className="text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
-                            Add Category
+                        <button onClick={()=> handleCreate()} className="flex items-center justify-center gap-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2.5 w-auto" >
+                            <Plus className="w-4 h-4" />
+                            <span className="hidden sm:inline">Add Category</span>
                         </button>
-
                         <AnimatePresence>
                             {showCreateModal && (
                             <motion.div
@@ -220,7 +229,7 @@ export default function ProductCategory({
                     <table className="w-full text-sm text-left text-gray-500">
                         <thead className="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th className="px-6 py-3 cursor-pointer w-[50%]">
+                                <th className="px-6 py-3 cursor-pointer w-[45%]">
                                     <Link
                                         href="/product-categories"
                                         data={{
@@ -273,12 +282,22 @@ export default function ProductCategory({
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                                <Link href={`/category/${category.id}/product-list`} className="text-black bg-white hover:bg-green-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Add Product </Link>
-                                <button onClick={() => openEdit(category)} className="text-black bg-white hover:bg-blue-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </button>
-                                {category.is_active ? ( 
-                                    <button onClick={() => togglePlan(category)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
-                                    <button onClick={() => togglePlan(category)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
-                                )}
+                                <div className="hidden md:hidden lg:hidden xl:flex items-center gap-2">
+                                    <Link href={`/category/${category.id}/product-list`} className="text-black bg-white hover:bg-green-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Add Product </Link>
+                                    <button onClick={()=> openEdit(category)} className="text-black bg-white hover:bg-blue-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2" > Edit </button> {category.is_active ? ( <button onClick={()=> togglePlan(category)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Inactive </button> ) : ( <button onClick={()=> togglePlan(category)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Active </button> )}
+                                </div>
+                                <div className="flex md:flex lg:flex xl:hidden items-center gap-2">
+                                    <Link href={`/category/${category.id}/product-list`} className="p-2 bg-white border border-gray-300 rounded-lg text-green-600 hover:bg-green-100">
+                                    <PackagePlus className="w-5 h-5" />
+                                    </Link>
+                                    <button onClick={()=> openEdit(category)} className="p-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-100" >
+                                        <PencilLine className="w-5 h-5" />
+                                    </button> {category.is_active ? ( <button onClick={()=> togglePlan(category)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700" >
+                                        <ToggleLeft className="w-5 h-5" />
+                                    </button> ) : ( <button onClick={()=> togglePlan(category)} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700" >
+                                        <ToggleRight className="w-5 h-5" />
+                                    </button> )}
+                                </div>
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -307,5 +326,6 @@ export default function ProductCategory({
             </div>
         </main>
     </AuthenticatedLayout>
+    </>
   );
 }

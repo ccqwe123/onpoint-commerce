@@ -17,7 +17,7 @@ const Status = ({ show, onClose, onConfirm, isActive, type }: ToggleModalProps) 
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.2 }}
-        className="fixed inset-0 flex items-center justify-center bg-black/50 z-50"
+        className="fixed inset-0 flex items-center justify-center bg-black/50 z-50 !mt-0"
       >
         <motion.div
           key="modal-content"

@@ -5,9 +5,10 @@ import { Link } from "@inertiajs/react";
 import { Order } from "@/types/Plan";
 import { Card } from '@/Components/ui/card';
 import { useState, useEffect } from "react";
-import { ArrowUp, ArrowDown } from 'lucide-react';
+import { ArrowUp, ArrowDown, Eye } from 'lucide-react';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface OrderProps {
   orders: Paginated<Order>;
@@ -28,7 +29,7 @@ export default function Home({ auth, orders: innitialOrders, filters }: Props) {
         if (filters.sort_by === column) {
         return filters.sort_direction === "asc" ? "desc" : "asc";
         }
-        return "asc";
+        return "desc";
     };
 
     useEffect(() => {
@@ -39,12 +40,14 @@ export default function Home({ auth, orders: innitialOrders, filters }: Props) {
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/quotations?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
+        fetch(`/api/quotations?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "desc"}`)
         .then((res) => res.json())
         .then((data) => setOrders(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
 
   return (
+    <>
+    <Head title="OnPoint | Quotation List" />
     <AuthenticatedLayout user={auth.user}>
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
@@ -149,7 +152,14 @@ export default function Home({ auth, orders: innitialOrders, filters }: Props) {
                             <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap border-b border-gray-200">{order.subtotal}</td>
                             <td className="px-6 py-4 capitalize border-b border-gray-200">{order.payment == 'one-time' ? 'One Time' : order.payment == '6-months' ? '6 Months' : order.payment == '12-months' ? '12 Months' : order.payment == '24-months' ? '24 Months' : '-'}</td>
                             <td className="px-6 py-4 border-b border-gray-200">
-                                <Link href={`/quotation/${order.id}/view`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> View Quotation </Link>
+                                <div className="hidden md:hidden lg:hidden xl:flex">
+                                    <Link href={`/quotation/${order.id}/view`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> View Quotation </Link>
+                                </div>
+                                <div className="flex md:flex lg:flex xl:hidden">
+                                    <Link href={`/quotation/${order.id}/view`} className="p-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-100">
+                                        <Eye className="w-5 h-5" />
+                                    </Link> 
+                                </div>
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -176,5 +186,6 @@ export default function Home({ auth, orders: innitialOrders, filters }: Props) {
             </div>
         </main>
     </AuthenticatedLayout>
+    </>
   );
 }

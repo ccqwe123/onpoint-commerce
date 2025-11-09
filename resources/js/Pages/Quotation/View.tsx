@@ -6,6 +6,9 @@ import { useReactToPrint } from "react-to-print";
 import Print from "@/Pages/Quotation/Print";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 
 interface OrderProps {
   order: Order
@@ -56,15 +59,75 @@ export default function Home({ auth, order }: ViewProps) {
       documentTitle: "Quotation",
       onPrintError: () => setIsPrinting(false),
     });
-     const startPrint = async () => {
+
+    const isMobile = /Mobi|Android|iPhone|iPad|Tablet/i.test(navigator.userAgent) 
+  || (window.innerWidth <= 1280 && window.innerHeight <= 800);
+
+    const startPrint = async () => {
       setIsPrinting(true);
       try {
-        await handlePrint();
+        if (isMobile) {
+          // Mobile fallback → generate PDF
+          // const element = printRef.current;
+          // if (!element) return;
+
+          // const canvas = await html2canvas(element);
+          // const imgData = canvas.toDataURL("image/png");
+
+          // const pdf = new jsPDF("p", "mm", "a4");
+          // const pdfWidth = pdf.internal.pageSize.getWidth();
+          // const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+
+          // pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+          // pdf.save("Quotation.pdf");
+          const newWindow = window.open("", "_blank");
+          if (!newWindow) return;
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>Quotation</title>
+                <link rel="stylesheet" href="/build/assets/app.css" />
+                <script src="https://cdn.tailwindcss.com"></script>
+                <style>
+                  @page { size: A4; margin: 0; }
+                  @media print {
+                    * {
+                      -webkit-print-color-adjust: exact !important;
+                      print-color-adjust: exact !important;
+                      color-adjust: exact !important; 
+                    }
+                  }
+
+                  body { margin: 0; }
+                </style>
+              </head>
+              <body>
+                ${printRef.current?.outerHTML}
+              </body>
+            </html>
+          `);
+
+          newWindow.document.close();
+          newWindow.focus();
+          newWindow.print();
+        } else {
+          await handlePrint();
+        }
       } finally {
         setTimeout(() => setIsPrinting(false), 1500);
       }
     };
+    //  const startPrint = async () => {
+    //   setIsPrinting(true);
+    //   try {
+    //     await handlePrint();
+    //   } finally {
+    //     setTimeout(() => setIsPrinting(false), 1500);
+    //   }
+    // };
   return (
+    <>
+    <Head title="OnPoint | View Quotation" />
     <AuthenticatedLayout user={auth.user}>
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
@@ -87,13 +150,13 @@ export default function Home({ auth, order }: ViewProps) {
                       )}
                       {isPrinting ? "Printing..." : "Print"}
                     </button>
-                    <div className="hidden">
+                    <div style={{ position: "fixed", top: 0, left: 0, width: "210mm", height: "297mm", zIndex: -9999, background: "#fff" }}>
                       <Print ref={printRef} order={order} />
                     </div>
                 </div>
                 <div className="flex justify-center items-center">
-                  <div className="w-[40%]">
-                      <div className="relative cursor-pointer rounded-xl py-3 px-4 transition-all duration-200 text-white bg-gradient-to-b from-[#0026AB] to-[#000518] hover:scale-105">
+                  <div className="w-full md:w-[50%] lg:w-[40%] xl:w-[40%]">
+                      <div className="relative rounded-xl py-3 px-4 transition-all duration-200 text-white bg-gradient-to-b from-[#0026AB] to-[#000518]">
                           <h3 className="text-[24px] font-medium">{order.plan ? order.plan.name : '-'}</h3>
                           <div className="text-[40px] text-white font-semibold">
                             {order.plan && order.plan.price == null ? 'Custom' : '₱'+order.plan?.price+' /mo'}
@@ -131,5 +194,6 @@ export default function Home({ auth, order }: ViewProps) {
             </div>
         </main>
     </AuthenticatedLayout>
+    </>
   );
 }

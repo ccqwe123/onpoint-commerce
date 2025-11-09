@@ -8,12 +8,16 @@ import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { useForm } from "@inertiajs/react";
 import { Card } from '@/Components/ui/card';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
+import { PencilLine, ToggleLeft, ToggleRight  } from "lucide-react"; 
 
 interface PlansPageProps {
   plans: Paginated<PlanData>;
 }
-
-export default function PlanPage({ plans }: PlansPageProps) {
+type Props = PageProps & PlansPageProps;
+export default function PlanPage({ plans, auth }: Props) {
     const [showModal, setShowModal] = useState(false);
     const [selectedPlan, setSelectedPlan] = useState<PlanData | null>(null);
     const { put, processing } = useForm();
@@ -43,8 +47,9 @@ export default function PlanPage({ plans }: PlansPageProps) {
 
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+        <>
+        <Head title="OnPoint | Plan List" />
+        <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
                 <h1 className="text-2xl font-semibold text-gray-900">Plans</h1>
@@ -75,11 +80,18 @@ export default function PlanPage({ plans }: PlansPageProps) {
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                                <Link href={`/plan/${plan.id}`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </Link>
-                                {plan.is_active ? ( 
-                                    <button onClick={() => togglePlan(plan)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
-                                    <button onClick={() => togglePlan(plan)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
-                                )}
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Link href={`/plan/${plan.id}`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2"> Edit </Link> {plan.is_active ? ( <button onClick={()=> togglePlan(plan)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Inactive </button> ) : ( <button onClick={()=> togglePlan(plan)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Active </button> )}
+                                </div>
+                                <div className="flex sm:hidden items-center gap-2">
+                                    <Link href={`/plan/${plan.id}`} className="p-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-100">
+                                    <PencilLine className="w-5 h-5" />
+                                    </Link> {plan.is_active ? ( <button onClick={()=> togglePlan(plan)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700" >
+                                        <ToggleLeft className="w-5 h-5" />
+                                    </button> ) : ( <button onClick={()=> togglePlan(plan)} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700" >
+                                        <ToggleRight className="w-5 h-5" />
+                                    </button> )}
+                                </div>
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -100,6 +112,7 @@ export default function PlanPage({ plans }: PlansPageProps) {
                 />
             </div>
         </main>
-    </div>
+        </AuthenticatedLayout>
+    </>
   );
 }

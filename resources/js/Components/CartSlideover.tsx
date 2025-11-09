@@ -5,7 +5,7 @@ import {
   DialogTitle
 } from "@headlessui/react";
 import { X } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import { Product } from "@/types/Product";
 
@@ -19,7 +19,8 @@ interface Props {
 export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
   const [cartItems, setCartItems] = useState<(Product & { quantity: number })[]>([]);
   const [loading, setLoading] = useState(false);
-
+  const [initialized, setInitialized] = useState(false);
+  const timers = useRef<Record<number, ReturnType<typeof setTimeout>>>({});
   useEffect(() => {
     const ids = Object.keys(cart).map(Number).filter(Boolean);
     if (ids.length === 0) {
@@ -55,13 +56,36 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
     };
   }, [cart]);
 
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
+    const target = e.currentTarget;
+    if (target.src.includes("/images/no-image.jpeg")) return;
+    target.src = "/images/no-image.jpeg";
+    target.alt = "Product placeholder image";
+  };
+
   // Update quantity
-  const updateQuantity = (id: number, delta: number) => {
+  const debouncedUpdateQuantity = (id: number, delta: number) => {
+    if (timers.current[id]) clearTimeout(timers.current[id]);
+
+    timers.current[id] = setTimeout(() => {
+      setCart((prev) => {
+        const next = { ...prev };
+        const newQty = (next[id] || 0) + delta;
+        if (newQty <= 0) delete next[id];
+        else next[id] = newQty;
+        localStorage.setItem("cart", JSON.stringify(next));
+        return next;
+      });
+    }, 300);
+  };
+
+  // --- Direct input: instant update ---
+  const setQuantityInstant = (id: number, value: number) => {
     setCart((prev) => {
       const next = { ...prev };
-      const newQty = (next[id] || 0) + delta;
-      if (newQty <= 0) delete next[id];
-      else next[id] = newQty;
+      if (value <= 0) delete next[id];
+      else next[id] = value;
+      localStorage.setItem("cart", JSON.stringify(next));
       return next;
     });
   };
@@ -79,6 +103,18 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
     const unit = parseFloat(p.discount_price || p.price) || 0;
     return sum + unit * (p.quantity || 0);
   }, 0);
+
+  const truncateHtml = (html: string, maxLength: number) => {
+    if (!html) return "";
+
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    const text = div.textContent || div.innerText || "";
+
+    return text.length > maxLength
+      ? text.substring(0, maxLength) + "..."
+      : text;
+  };
 
   return (
     <Dialog open={open} onClose={setOpen} className="relative z-50">
@@ -120,8 +156,9 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
                             <li key={product.id} className="flex py-6">
                               <div className="h-24 w-24 shrink-0 overflow-hidden rounded-md border border-gray-200">
                                 <img
-                                  src={product.images?.[0]?.image_path || "/images/placeholder.png"}
+                                  src={product.images?.[0]?.image_path || "/images/no-image.jpeg"}
                                   alt={product.name}
+                                  onError={handleImageError}
                                   className="h-full w-full object-cover"
                                 />
                               </div>
@@ -132,20 +169,31 @@ export default function CartSlideover({ open, setOpen, cart, setCart }: Props) {
                                     ₱{(unit * product.quantity).toFixed(2)}
                                   </p>
                                 </div>
-                                <p className="mt-1 text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: product.description ?? "" }}></p>
+                                <p className="mt-1 text-sm text-gray-500" dangerouslySetInnerHTML={{ __html: truncateHtml(product.description ?? "", 120) }}></p>
 
                                 {/* Quantity controls */}
                                 <div className="mt-2 flex items-center gap-3">
                                   <div className="flex items-center rounded-md border border-gray-200">
                                     <button
-                                      onClick={() => updateQuantity(product.id, -1)}
+                                      onClick={() => debouncedUpdateQuantity(product.id, -1)}
                                       className="px-3 py-1"
                                     >
                                       -
                                     </button>
-                                    <span className="px-4">{product.quantity}</span>
+                                    <input
+                                      type="text"
+                                      value={product.quantity}
+                                      min={0}
+                                      onFocus={(e) => e.target.select()}
+                                      onChange={(e) => {
+                                        const value = parseInt(e.target.value, 10);
+                                        if (isNaN(value) || value < 0) return;
+                                        setQuantityInstant(product.id, value);
+                                      }}
+                                      className="w-16 text-center border-l border-r border-gray-200 focus:outline-none"
+                                    />
                                     <button
-                                      onClick={() => updateQuantity(product.id, 1)}
+                                      onClick={() => debouncedUpdateQuantity(product.id, 1)}
                                       className="px-3 py-1"
                                     >
                                       +

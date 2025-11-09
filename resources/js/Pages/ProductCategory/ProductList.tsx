@@ -5,13 +5,15 @@ import { Category, Product, ToggleProduct } from "@/types/Product";
 import PaginationWithSearch from "@/Components/PaginationWithSearch";
 import Pagination from "@/Components/Pagination";
 import { Paginated } from "@/types/Pagination";
-import { ChevronLeft, ArrowUp, ArrowDown } from 'lucide-react';
+import { ChevronLeft, ArrowUp, ArrowDown, Plus } from 'lucide-react';
+import { PencilLine, ToggleLeft, ToggleRight  } from "lucide-react"; 
 import { Link } from "@inertiajs/react";
 import Status from "@/Components/Modals/Status";
 import { Card } from '@/Components/ui/card';
 import { useForm } from "@inertiajs/react";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface Props {
   category: Category;
@@ -53,7 +55,7 @@ export default function ProductList({ auth, category, products: initialProducts,
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/products/${category.id}?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
+        fetch(`/api/products/${category.id}?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "desc"}`)
         .then((res) => res.json())
         .then((data) => setProducts(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
@@ -103,6 +105,8 @@ export default function ProductList({ auth, category, products: initialProducts,
 
 
   return (
+    <>
+    <Head title="OnPoint | Product List" />
     <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
@@ -125,8 +129,9 @@ export default function ProductList({ auth, category, products: initialProducts,
                                 <input type="search" value={search} onChange={(e)=> setSearch(e.target.value)} id="default-search" className="block w-full p-2.5 ps-10 text-sm text-gray-900 border border-gray-300 rounded-lg bg-gray-50 focus:ring-blue-500 focus:border-blue-500" placeholder="Search..." />
                             </div>
                         </div>
-                        <Link href={`/product/${category.id}/create`} className="text-black border border-gray-400 bg-white hover:bg-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center float-right">
-                            Add Product
+                        <Link href={`/product/${category.id}/create`} className="flex items-center justify-center gap-2 text-white bg-blue-700 hover:bg-blue-800 font-medium rounded-lg text-sm px-4 py-2.5 w-auto" >
+                            <Plus className="w-4 h-4 " />
+                            <span className="hidden sm:inline">Add Product</span>
                         </Link>
 
                         <AnimatePresence>
@@ -220,11 +225,20 @@ export default function ProductList({ auth, category, products: initialProducts,
                                 </div>
                             </td>
                             <td className="px-6 py-4">
-                                <Link href={`/category/${category.id}/product/${product.id}`} className="text-black bg-white hover:bg-blue-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </Link>
-                                {product.is_active ? ( 
-                                    <button onClick={() => togglePlan(product)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
-                                    <button onClick={() => togglePlan(product)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
-                                )}
+                                <div className="hidden sm:flex items-center gap-2">
+                                    <Link href={`/category/${category.id}/product/${product.id}`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2"> Edit </Link> 
+                                    {product.is_active ? ( <button onClick={()=> togglePlan(product)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Inactive </button> ) : ( <button onClick={()=> togglePlan(product)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Active </button> )}
+                                </div>
+                                <div className="flex sm:hidden items-center gap-2">
+                                    <Link href={`/category/${category.id}/product/${product.id}`} className="p-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-100">
+                                        <PencilLine className="w-5 h-5" />
+                                    </Link> 
+                                    {product.is_active ? ( <button onClick={()=> togglePlan(product)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700" >
+                                        <ToggleLeft className="w-5 h-5" />
+                                    </button> ) : ( <button onClick={()=> togglePlan(product)} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700" >
+                                        <ToggleRight className="w-5 h-5" />
+                                    </button> )}
+                                </div>
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -253,5 +267,6 @@ export default function ProductList({ auth, category, products: initialProducts,
             </div>
         </main>
     </AuthenticatedLayout>
+    </>
   );
 }

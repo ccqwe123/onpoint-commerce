@@ -10,7 +10,7 @@ const MainContent = () => {
   ];
 
   return (
-    <main className="flex-1 flex items-center justify-center px-4 py-12">
+    <main className="flex-1 flex items-center justify-center px-4 py-12 min-h-[85vh] select-none">
       <div className="max-w-2xl mx-auto text-center space-y-8">
         <div className="flex justify-center">
           <div className="w-20 h-20 bg-transparent rounded-full flex items-center justify-center">
@@ -20,7 +20,7 @@ const MainContent = () => {
 
         {/* Step indicator */}
         <p className="text-sm text-gray-500 font-medium tracking-wider uppercase !mt-0">
-          STEP 1 OF 3
+          &nbsp;
         </p>
 
         {/* Main heading */}

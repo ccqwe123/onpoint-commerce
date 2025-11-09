@@ -7,7 +7,7 @@ import { PlanData } from "@/types/Plan";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Helmet } from "react-helmet";
+import { Head } from '@inertiajs/react';
 
 type PlanProps = PageProps;
 const Plans = ({auth}: PlanProps) => {
@@ -29,9 +29,7 @@ const Plans = ({auth}: PlanProps) => {
 
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Plans</title>
-      </Helmet>
+      <Head title="OnPoint | Plans" />
       <AuthenticatedLayout user={auth.user}>
         <motion.div className="flex-1 p-16"
           initial={{ opacity: 0, scale: 0.98 }}

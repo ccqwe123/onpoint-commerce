@@ -13,12 +13,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Input } from '@/Components/ui/input';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/Button';
+import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
+import { PageProps } from "@/types"; 
+import { Head } from '@inertiajs/react';
 
 interface Props {
   category: Category;
 }
 
-export default function CreateProduct({ category }: Props) {
+type ProductCreateProps = PageProps & Props;
+
+export default function CreateProduct({ category, auth }: ProductCreateProps) {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,8 +84,9 @@ export default function CreateProduct({ category }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-white">
-        <Header />
+    <>
+        <Head title="OnPoint | Create Product" />
+        <AuthenticatedLayout user={auth.user}>
          <form className="px-4 py-12">
             <div className=" bg-card">
                 <div className="container mx-auto px-6 py-4">
@@ -225,6 +231,7 @@ export default function CreateProduct({ category }: Props) {
                 )}
             </AnimatePresence>
         </form>
-    </div>
+    </AuthenticatedLayout>
+    </>
   );
 }

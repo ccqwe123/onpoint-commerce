@@ -9,7 +9,7 @@ import { Plan } from "@/types/Plan";
 import { motion, AnimatePresence } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types"; 
-import { Helmet } from "react-helmet";
+import { Head } from '@inertiajs/react';
 
 interface ReviewOrderProps {
   onContinue: () => void;
@@ -29,6 +29,7 @@ function getPaymentMonths(payment: string | null): number {
       return 1;
   }
 }
+
 
 export function formatCurrency(value: string | number): string {
   const num = typeof value === "string" ? parseFloat(value) : value;
@@ -57,12 +58,34 @@ export default function ReviewOrder({ auth }: PageProps) {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(false);
     const [payment, setPayment] = useState('');
+    const [paymentMonthly, setPaymentMonthly] = useState(0);
     const [clientName, setClientName] = useState("");
     const [clientId, setClientId] = useState<number | null>(null);
     const [suggestions, setSuggestions] = useState<Client[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
 
+    useEffect(() => {
+        const saved = localStorage.getItem("payment") as
+        | 'one-time'
+        | '6-months'
+        | '12-months'
+        | '24-months'
+        | null;
+
+        const planMap: Record<typeof payment, number> = {
+        'one-time': 1,
+        '6-months': 6,
+        '12-months': 12,
+        '24-months': 24,
+        };
+
+        if (saved && planMap[saved]) {
+        setPaymentMonthly(planMap[saved]);
+        } else {
+        setPaymentMonthly(1);
+        }
+    }, []);
     useEffect(() => {
         const handler = setTimeout(async () => {
         if (clientName.length > 1 && clientId === null) {
@@ -183,7 +206,7 @@ export default function ReviewOrder({ auth }: PageProps) {
     }, 0);
 
     const formatPrice = (price: number) => {
-        return `P ${price.toLocaleString("en-PH", {
+        return `₱${price.toLocaleString("en-PH", {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
         })}`;
@@ -191,9 +214,7 @@ export default function ReviewOrder({ auth }: PageProps) {
 
     return (
         <>
-        <Helmet>
-            <title>OnPoint | Review Orders</title>
-        </Helmet>
+        <Head title="OnPoint | Review Orders" />
         <AuthenticatedLayout user={auth.user}>
             <motion.div className="flex-1 px-16"
                 initial={{ opacity: 0, scale: 0.98 }}
@@ -218,7 +239,7 @@ export default function ReviewOrder({ auth }: PageProps) {
                                 <p className="text-4xl font-semibold">
                                     {plans.type === "custom"
                                         ? "Custom"
-                                        : `P${parseFloat(plans.price || plans.discount_price || "0").toLocaleString('en-PH', { minimumFractionDigits: 2 })} /mo`}
+                                        : `₱${parseFloat(plans.price || plans.discount_price || "0").toLocaleString('en-PH', { minimumFractionDigits: 2 })} /mo`}
                                 </p>
                             </div>
                         <div className="py-10 px-2">
@@ -262,8 +283,8 @@ export default function ReviewOrder({ auth }: PageProps) {
                                 payment == 'one-time' ? 'One Time' : 
                                 payment == '6-months' ? '6 Months' :
                                 payment == '12-months' ? '12 Months' : 
-                                payment == '24-months' ? '24 Months' : 'No Payment Selected'} : </span>
-                        <span className="text-onpoint-btnblue font-semibold text-3xl">{ getMonthlyPayment(payment, plans?.price, subtotal, ) }</span>
+                                payment == '24-months' ? '24 Months' : 'No Payment Selected'} <span className="text-lg">(Device/s Only)</span>: </span>
+                        <span className="text-onpoint-btnblue font-semibold text-3xl">{payment === 'one-time' ? formatPrice(subtotal) : formatPrice(subtotal/paymentMonthly) }</span>
                     </div>
                     <div className="flex flex-row gap-4">
                         <Link 

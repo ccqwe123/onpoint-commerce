@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from '@/Components/Button';
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface Props {
   plan: PlanData;
@@ -76,6 +77,8 @@ export default function EditPlan({ auth, plan }: EditProps) {
 
 
   return (
+    <>
+    <Head title="OnPoint | Edit Plan" />
     <AuthenticatedLayout user={auth.user}>
          <main className="px-4 py-12">
             <form onSubmit={openConfirmModal} className="max-w-[1480px] mx-auto space-y-8">
@@ -221,5 +224,6 @@ export default function EditPlan({ auth, plan }: EditProps) {
                 </AnimatePresence>
             </main>
         </AuthenticatedLayout>
+    </>
   );
 }

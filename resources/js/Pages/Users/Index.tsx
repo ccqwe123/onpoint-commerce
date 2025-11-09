@@ -7,9 +7,11 @@ import { Card } from '@/Components/ui/card';
 import { useForm } from "@inertiajs/react";
 import { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown } from 'lucide-react';
+import { PencilLine, ToggleLeft, ToggleRight  } from "lucide-react"; 
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import Status from "@/Components/Modals/Status";
 import { PageProps } from "@/types";
+import { Head } from '@inertiajs/react';
 
 interface OrderProps {
   users: Paginated<User>;
@@ -53,7 +55,7 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
     }, [search]);
 
     useEffect(() => {
-        fetch(`/api/users?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "asc"}`)
+        fetch(`/api/users?search=${debouncedSearch}&sort_by=${filters.sort_by || "id"}&sort_direction=${filters.sort_direction || "desc"}`)
         .then((res) => res.json())
         .then((data) => setUsers(data));
     }, [debouncedSearch, filters.sort_by, filters.sort_direction]);
@@ -86,6 +88,8 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
         });
     };
   return (
+    <>
+    <Head title="OnPoint | User List" />
     <AuthenticatedLayout user={auth.user}>
         <main className="px-4 py-12">
             <div className="max-w-[1480px] mx-auto space-y-8">
@@ -192,11 +196,19 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
                                 </div>
                             </td>
                             <td className="px-6 py-4 border-b border-gray-200">
-                                <Link href={`/users/${user.id}/edit`} className="text-black bg-white hover:bg-green-100 hover:text-black border border-gray-300 font-medium rounded-lg text-sm px-5 py-2 mr-2"> Edit </Link>
-                                {user.is_active ? ( 
-                                    <button onClick={() => togglePlan(user)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Inactive </button> ) : ( 
-                                    <button onClick={() => togglePlan(user)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2"> Set as Active </button> 
-                                )}
+                                <div className="hidden md:hidden lg:hidden xl:flex items-center gap-2">
+                                    <Link href={`/users/${user.id}/edit`} className="text-black bg-white hover:bg-blue-800 hover:text-white border border-gray-300 font-medium rounded-lg text-sm px-5 py-2"> Edit </Link> 
+                                    {user.is_active ? ( <button onClick={()=> togglePlan(user)} className="text-white bg-red-700 hover:bg-red-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Inactive </button> ) : ( <button onClick={()=> togglePlan(user)} className="text-white bg-green-700 hover:bg-green-800 font-medium rounded-lg text-sm px-5 py-2" > Set as Active </button> )}
+                                </div>
+                                <div className="flex md:flex lg:flex xl:hidden items-center gap-2">
+                                    <Link href={`/users/${user.id}/edit`} className="p-2 bg-white border border-gray-300 rounded-lg text-blue-600 hover:bg-blue-100">
+                                    <PencilLine className="w-5 h-5" />
+                                    </Link> {user.is_active ? ( <button onClick={()=> togglePlan(user)} className="p-2 bg-red-600 text-white rounded-lg hover:bg-red-700" >
+                                        <ToggleLeft className="w-5 h-5" />
+                                    </button> ) : ( <button onClick={()=> togglePlan(user)} className="p-2 bg-green-600 text-white rounded-lg hover:bg-green-700" >
+                                        <ToggleRight className="w-5 h-5" />
+                                    </button> )}
+                                </div>
                             </td>
                         </tr> ))} </tbody>
                     </table>
@@ -229,5 +241,6 @@ export default function Home({ auth, users: innitialOrders, filters }: Props) {
             </div>
         </main>
     </AuthenticatedLayout>
+    </>
   );
 }

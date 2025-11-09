@@ -6,7 +6,7 @@ import { Product } from "@/types/Product";
 import { motion } from "framer-motion";
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout";
 import { PageProps } from "@/types";
-import { Helmet } from "react-helmet";
+import { Head } from '@inertiajs/react';
 
 interface PaymentTermsProps {
   onContinue: () => void;
@@ -22,6 +22,8 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
   const [selectedItem, setSelectedItem] = useState<Product | null>(null);
   const [replacementProducts, setReplacementProducts] = useState<Product[]>([]);
   const [replacementSelections, setReplacementSelections] = useState<Record<number, number>>({});
+  const [replacementQuantities, setReplacementQuantities] = useState<{ [id: number]: number }>({});
+
 
   useEffect(() => {
     const saved = localStorage.getItem("cart");
@@ -80,7 +82,7 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
   const downpayment = subtotal * 0.3;
 
   const formatPrice = (price: number) => {
-    return `P ${price.toLocaleString("en-PH", {
+    return `₱${price.toLocaleString("en-PH", {
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`;
@@ -144,11 +146,10 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
     setShowReplaceModal(false);
     setSelectedItem(null);
   };
+  const canReplace = Object.values(replacementSelections).some((qty) => qty > 0);
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Payment Terms</title>
-      </Helmet>
+      <Head title="OnPoint | Payment Terms" />
       <AuthenticatedLayout user={auth.user}>
         <motion.div  className="max-w-[1480px] mx-auto px-4 py-8"
           initial={{ opacity: 0, scale: 0.98 }}
@@ -279,7 +280,7 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
           {/* Payment Summary */}
           <div className="flex justify-start items-center mb-12 gap-10">
             <div>
-              <p className="text-lg text-gray-700 mb-2">{selectedPayment === 'one-time' ? 'One time payment' : (selectedPayment === '6-months' ? 'For 6 Months' : (selectedPayment === '12-months' ? 'For 12 Months' : (selectedPayment === '24-months' ? 'For 24 Months' : '')))} :</p>
+              <p className="text-lg text-gray-700 mb-2">{selectedPayment === 'one-time' ? 'One time payment' : (selectedPayment === '6-months' ? 'For 6 Months' : (selectedPayment === '12-months' ? 'For 12 Months' : (selectedPayment === '24-months' ? 'For 24 Months' : '')))} (Device/s Only):</p>
               <p className="text-4xl font-bold text-onpoint-btnblue">
                 {selectedPayment === 'one-time' ? formatPrice(subtotal) : formatPrice(subtotal/payment) }
               </p>
@@ -347,8 +348,11 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
                     Cancel
                   </button>
                   <button
+                    disabled={!canReplace}
                     onClick={handleSubmitReplacement}
-                    className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
+                    className={`px-4 py-2 rounded-lg text-white ${
+                      canReplace ? "bg-blue-600 hover:bg-blue-700" : "bg-gray-400 cursor-not-allowed"
+                    }`}
                   >
                     Replace
                   </button>
@@ -358,7 +362,9 @@ const PaymentTerms: React.FC<PlanProps> = ({ onContinue, auth }) => {
           )}
 
 
-
+          <div className="h-12">
+            &nbsp;
+          </div>
         </motion.div >
         <footer className="w-full fixed bottom-0 bg-white shadow-[0_-1px_1px_rgba(0,0,0,0.1)] py-6">
           <div className="max-w-[1480px] mx-auto px-4 flex flex-col md:flex-row items-center justify-between space-y-2 md:space-y-0">

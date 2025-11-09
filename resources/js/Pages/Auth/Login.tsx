@@ -1,16 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from '@inertiajs/react';
 import { Card } from '@/Components/ui/logincard';
 import { Input } from '@/Components/ui/logininput';
 import { Label } from '@/Components/ui/label';
 import { Button } from '@/Components/ui/loginbutton';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
-import { Helmet } from "react-helmet";
+import { Head } from '@inertiajs/react';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
 
-  // Breeze form handling
   const { data, setData, post, processing, errors } = useForm({
     email: '',
     password: '',
@@ -41,11 +40,13 @@ export default function Login() {
     post('/login');
   };
 
+  useEffect(() => {
+    document.title = "OnPoint | Login";
+  }, []);
+
   return (
     <>
-      <Helmet>
-        <title>OnPoint | Login</title>
-      </Helmet>
+      <Head title="OnPoint | Login" />
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <Card className="w-full sm:max-w-md p-8 bg-card text-card-foreground shadow-lg bg-white">
           <div className="space-y-6">
@@ -68,7 +69,7 @@ export default function Login() {
                   }`}
                   />
                   {errors.email && (
-                  <p className="text-sm text-destructive">{errors.email}</p>
+                  <p className="text-sm text-red-500 text-destructive">{errors.email}</p>
                   )}
               </div>
 

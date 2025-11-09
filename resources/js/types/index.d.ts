@@ -4,7 +4,7 @@ export interface User {
   id: number;
   name: string;
   email: string;
-  user_type: "admin" | "manager" | "staff";
+  user_type: "admin" | "manager" | "staff" | "";
   is_active: boolean;
 }
 
